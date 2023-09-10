@@ -329,7 +329,10 @@ function getLegendContent(maxCount) {
     
     // Convert grid size in degrees to kilometers
     const gridSizeInKm = gridSizeInDegrees * 111;  // Roughly 111 km per degree of latitude
-
+  
+    // Add the title at the top of the legend
+    labels.push('<strong>Number of unique species</strong>');
+  
     for (let i = 0; i < grades.length; i++) {
         if (grades[i] !== lastGrade) {
             labels.push(
