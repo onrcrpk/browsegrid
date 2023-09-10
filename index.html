@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grid map</title>
+
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"
+    integrity="sha512-Zcn6bjR/8RZbLEpLIeOwNtzREBAJnUKESxces60Mpoj+2okopSAcSUIUOseddDm0cxnGQzxIR7vJgsLZbdLE3w=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+
+  <style>
+#leaflet-map {
+    height: 600px;
+    width: 1200px;
+}
+
+.info.legend {
+    display: none;
+    padding: 6px 8px;
+    font: 14px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    line-height: 24px;
+    color: #555;
+}
+.info.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+
+
+
+
+    </style>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" integrity="sha512-6ZCLMiYwTeli2rVh3XAPxy3YoR5fVxGdH/pz+KMCzRY2M65Emgkw00Yqmhh8qLGeYQ3LbVZGdmOX9KUjSKr0TA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css" integrity="sha512-fYyZwU1wU0QWB4Yutd/Pvhy5J1oWAwFXun1pt+Bps04WSe4Aq6tyHlT4+MHSJhD8JlLfgLuC4CbCnX5KHSjyCg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+    integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"
+    integrity="sha512-BwHfrr4c9kmRkLw6iXFdzcdWV/PGkVgiIyIWLLlTSXzWQzxuSg4DiQUCpauz/EWjgk5TYQqX/kvn9pG1NpYfqg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="https://unpkg.com/leaflet-kmz@latest/dist/leaflet-kmz.js"></script>
+  <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+  <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+
+
+  <link rel="stylesheet" href="L.switchBasemap.css">
+  
+
+  <script type="text/javascript" src="L.switchBasemap.js"></script>
+
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css" integrity="sha512-vJfMKRRm4c4UupyPwGUZI8U651mSzbmmPgR3sdE3LcwBPsdGeARvUM5EcSTg34DK8YIRiIo+oJwNfZPMKEQyug==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" integrity="sha512-ozq8xQKq6urvuU6jNgkfqAmT7jKN2XumbrX1JiB3TnF7tI48DPI4Gy1GXKD/V3EExgAs1V+pRO7vwtS1LHg0Gw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js" integrity="sha512-OFs3W4DIZ5ZkrDhBFtsCP6JXtMEDGmhl0QPlmWYBJay40TT1n3gt2Xuw8Pf/iezgW9CdabjkNChRqozl/YADmg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+</head>
+
+
+
+<body>
+
+    <div id="leaflet-map"></div>
+
+    <div id="map-legend"></div>
+
+
+  </div>
+  
+
+      <script>
+
+var validBounds = L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180));
+
+// Create a Leaflet map and set the initial view
+var map = L.map('leaflet-map', {
+  maxBounds: validBounds,
+  zoomControl: false // default zoom control is on the left top.
+}).setView([40, 0], 2);
+
+
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+// Add a scale control to the map that only shows kilometers
+L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+map.addControl(new L.Control.Fullscreen({ position: 'topright' }));
+
+
+
+// Define basemap layers with their respective properties
+new L.basemapsSwitcher([
+  {
+    layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri'
+    }).setOpacity(0.99).addTo(map),//DEFAULT MAP
+    maxZoom: 18,
+    bounds: validBounds,
+    icon: 'terrain.jpeg',
+    name: 'Terrain'
+  },
+  {
+    layer: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).setOpacity(0.75),
+    icon: 'topo.jpg',
+    bounds: validBounds,
+    name: 'OpenTopo'
+  },
+
+  {
+    layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+    }).setOpacity(0.8),
+    maxZoom: 21,
+    icon: 'satellite.jpg',
+    bounds: validBounds,
+    name: 'Satellite'
+  },
+  {
+    layer: L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors)'
+    }),
+    icon: 'osm.png',
+    bounds: validBounds,
+    name: 'OSM'
+  },
+], { position: 'bottomleft' }).addTo(map);
+
+
+var markers = L.markerClusterGroup();
+var rectanglesGroup = new L.LayerGroup();
+var drawnItems = new L.FeatureGroup();
+var fetchedData = null;  // Storage for fetched data
+var drawnBounds = null;  // Add this line
+
+
+map.addLayer(drawnItems);
+
+var drawControl = new L.Control.Draw({
+    draw: {
+        polyline: false,
+        polygon: false,
+        circle: false,
+        marker: false,
+        circlemarker: false,
+        rectangle: true,
+    },
+    edit: {
+        featureGroup: drawnItems,
+        edit: false,
+        remove: false
+    }
+});
+map.addControl(drawControl);
+
+map.on(L.Draw.Event.CREATED, function(event) {
+    var layer = event.layer;
+    drawnBounds = layer.getBounds();  // Store the bounds when drawn
+    drawnItems.clearLayers();
+    drawnItems.addLayer(layer);
+    var bounds = layer.getBounds();
+
+    var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
+    fetchDataAndCreateGrid(apiUrl);
+    drawnItems.clearLayers();
+});
+
+map.on('zoomend', function() {
+    if (fetchedData) {
+        processDataAndCreateGrid(fetchedData);
+    }
+    updateVisibilityBasedOnZoom(map.getZoom());
+});
+
+function fetchDataAndCreateGrid(apiUrl) {
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            fetchedData = data;
+            processDataAndCreateGrid(data);
+            $(".info.legend").show();
+
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+        });
+}
+
+function processDataAndCreateGrid(data) {
+    let zoomLevel = map.getZoom();
+    let gridSize = getGridSizeForZoom(zoomLevel);
+
+    markers.clearLayers();
+    rectanglesGroup.clearLayers();
+
+    const gridCounts = {};
+    let maxSpeciesCount = 0;
+
+    data.markers.forEach(markerData => {
+        const markerIcon = L.icon({
+            iconUrl: 'marker-icon.png',
+            iconSize: [15, 15],
+        });
+        const marker = L.marker([markerData.lat, markerData.lon], { icon: markerIcon });
+        markers.addLayer(marker);
+        
+        const gridLat = Math.floor(markerData.lat / gridSize) * gridSize;
+        const gridLng = Math.floor(markerData.lon / gridSize) * gridSize;
+        const gridKey = `${gridLat},${gridLng}`;
+        const species = markerData.title.split(":")[1]?.trim();
+
+        if (!gridCounts[gridKey]) {
+            gridCounts[gridKey] = {
+                species: new Set(),
+                recordings: 0
+            };
+        }
+        if (species) {
+            gridCounts[gridKey].species.add(species);
+        }
+        gridCounts[gridKey].recordings++;
+    });
+
+    for (let gridKey in gridCounts) {
+        maxSpeciesCount = Math.max(maxSpeciesCount, gridCounts[gridKey].species.size);
+    }
+
+    // Update the legend content dynamically
+    $(".info.legend").html(getLegendContent(maxSpeciesCount));
+    const currentZoom = map.getZoom();
+
+if (currentZoom <= 3 && drawnBounds) {
+    rectanglesGroup.clearLayers();
+    
+    const color = getColor(data.markers.length, data.markers.length); // Since it's a single grid, the count will be the total
+    let rectangle = L.rectangle(
+        [drawnBounds.getSouthWest(), drawnBounds.getNorthEast()],
+        { color: color, weight: 1 }
+    ).bindTooltip(`${data.markers.length} recordings from ${new Set(data.markers.map(m => m.title.split(":")[1]?.trim())).size} unique species`);
+    rectanglesGroup.addLayer(rectangle);
+    
+    map.addLayer(rectanglesGroup);
+    return;
+}
+
+
+    for (let gridKey in gridCounts) {
+        const [gridLat, gridLng] = gridKey.split(',').map(Number);
+        const speciesCount = gridCounts[gridKey].species.size;
+        const recordingsCount = gridCounts[gridKey].recordings;
+
+        const color = getColor(speciesCount, maxSpeciesCount);
+        const rectangle = L.rectangle(
+            [[gridLat, gridLng], [gridLat + gridSize, gridLng + gridSize]],
+            { color: color, weight: 1 }
+        ).bindTooltip(`${recordingsCount} recordings from ${speciesCount} unique species`);
+        rectanglesGroup.addLayer(rectangle);
+    }
+
+    map.addLayer(markers);
+    map.addLayer(rectanglesGroup);
+    updateVisibilityBasedOnZoom(map.getZoom());
+}
+
+function updateVisibilityBasedOnZoom(zoom) {
+    if (zoom > 9) {
+        rectanglesGroup.removeFrom(map);
+        map.addLayer(markers);
+    } else {
+        map.removeLayer(markers);
+        rectanglesGroup.addTo(map);
+    }
+}
+function getGridSizeForZoom(zoom) {
+    if (zoom <= 3 && drawnBounds) {  // Use the stored bounds
+        const widthInDegrees = drawnBounds.getEast() - drawnBounds.getWest();
+        return widthInDegrees;
+    }
+    if (zoom >= 10) return 0.1;
+    if (zoom >= 7) return 0.5;
+    return 1;
+}
+
+
+function getColor(count, maxCount) {
+    if (count <= maxCount * 0.25) return 'blue';
+    if (count <= maxCount * 0.5) return 'yellow';
+    if (count <= maxCount * 0.75) return 'orange';
+    return 'red';
+}
+
+var legend = L.control({ position: 'topright' });
+legend.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'info legend');
+    div.innerHTML = getLegendContent(0);  // Initially assume maxCount as 0
+    return div;
+};
+
+function getLegendContent(maxCount) {
+    const grades = [0, 0.25 * maxCount, 0.5 * maxCount, 0.75 * maxCount];
+    let labels = [];
+    let lastGrade = -1;
+    const gridSizeInDegrees = getGridSizeForZoom(map.getZoom());
+    
+    // Convert grid size in degrees to kilometers
+    const gridSizeInKm = gridSizeInDegrees * 111;  // Roughly 111 km per degree of latitude
+
+    for (let i = 0; i < grades.length; i++) {
+        if (grades[i] !== lastGrade) {
+            labels.push(
+                `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]}${grades[i + 1] && grades[i + 1] !== lastGrade ? ' &ndash; ' + grades[i + 1] : '+'}`
+            );
+            lastGrade = grades[i];
+        }
+    }
+    
+    labels.push(`<br>Grid size: ~${gridSizeInKm.toFixed(2)} km`);
+
+    return labels.join('<br>');
+}
+
+
+
+
+legend.addTo(map);
+
+
+      </script>
+
+</body>
+
+
+
+
+</html>
