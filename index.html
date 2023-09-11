@@ -333,11 +333,11 @@ function updateVisibilityBasedOnZoom(zoom) {
 
 function getGridSizeForZoom(zoom) {
     console.log(zoom);
-    if (zoom <= 3 && drawnBounds) {  // Use the stored bounds
+    if (zoom <= 2 && drawnBounds) {  // Use the stored bounds
         const widthInDegrees = drawnBounds.getEast() - drawnBounds.getWest();
         return widthInDegrees;
     }
-    if (zoom >= 8) return 0.2;
+    if (zoom >= 9) return 0.2;
     if (zoom >= 4) return 0.6;
 }
 
