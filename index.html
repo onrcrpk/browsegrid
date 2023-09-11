@@ -119,8 +119,8 @@ new L.basemapsSwitcher([
   {
     layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles &copy; Esri'
-    }).setOpacity(0.99).addTo(map),//DEFAULT MAP
-    maxZoom: 18,
+    }).setOpacity(0.7).addTo(map),//DEFAULT MAP
+    maxZoom: 17,
     bounds: validBounds,
     icon: 'terrain.jpeg',
     name: 'Terrain'
@@ -128,7 +128,7 @@ new L.basemapsSwitcher([
   {
     layer: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).setOpacity(0.75),
+    }).setOpacity(0.7),
     icon: 'topo.jpg',
     bounds: validBounds,
     name: 'OpenTopo'
@@ -137,7 +137,7 @@ new L.basemapsSwitcher([
   {
     layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-    }).setOpacity(0.8),
+    }).setOpacity(0.7),
     maxZoom: 21,
     icon: 'satellite.jpg',
     bounds: validBounds,
@@ -154,14 +154,31 @@ new L.basemapsSwitcher([
 ], { position: 'bottomleft' }).addTo(map);
 
 
-var markers = L.markerClusterGroup();
+var markers = L.markerClusterGroup({
+    spiderfyOnMaxZoom: false, 
+    removeOutsideVisibleBounds: true,
+    showCoverageOnHover: true,
+    zoomToBoundsOnClick: false
+});
+
+
 var rectanglesGroup = new L.LayerGroup();
 var drawnItems = new L.FeatureGroup();
 var fetchedData = null;  // Storage for fetched data
 var drawnBounds = null;  // Add this line
 
 
+markers.on('clusterclick', function(event) {
+    let childMarkers = event.layer.getAllChildMarkers();
+    let titlesList = childMarkers.map(marker => marker.options.title || 'No Title').join('<br>');
+    event.layer.bindPopup(titlesList).openPopup();
+});
+
+
+
 map.addLayer(drawnItems);
+
+L.drawLocal.draw.handlers.rectangle.tooltip.start = "Click and drag a reactangle on desired area";
 
 var drawControl = new L.Control.Draw({
     draw: {
@@ -170,7 +187,9 @@ var drawControl = new L.Control.Draw({
         circle: false,
         marker: false,
         circlemarker: false,
-        rectangle: true,
+        rectangle: {
+            shapeOptions: {},
+        }
     },
     edit: {
         featureGroup: drawnItems,
@@ -179,6 +198,10 @@ var drawControl = new L.Control.Draw({
     }
 });
 map.addControl(drawControl);
+
+// Enable the rectangle drawing mode immediately when the map opens
+new L.Draw.Rectangle(map, drawControl.options.draw.rectangle).enable();
+
 
 map.on(L.Draw.Event.CREATED, function(event) {
     var layer = event.layer;
@@ -228,7 +251,10 @@ function processDataAndCreateGrid(data) {
             iconUrl: 'marker-icon.png',
             iconSize: [15, 15],
         });
-        const marker = L.marker([markerData.lat, markerData.lon], { icon: markerIcon });
+        const marker = L.marker([markerData.lat, markerData.lon], { 
+    icon: markerIcon,
+    title: markerData.title
+});
         markers.addLayer(marker);
         
         const gridLat = Math.floor(markerData.lat / gridSize) * gridSize;
@@ -271,18 +297,23 @@ if (currentZoom <= 3 && drawnBounds) {
 }
 
 
-    for (let gridKey in gridCounts) {
-        const [gridLat, gridLng] = gridKey.split(',').map(Number);
-        const speciesCount = gridCounts[gridKey].species.size;
-        const recordingsCount = gridCounts[gridKey].recordings;
+for (let gridKey in gridCounts) {
+    const [gridLat, gridLng] = gridKey.split(',').map(Number);
+    const speciesCount = gridCounts[gridKey].species.size;
+    const recordingsCount = gridCounts[gridKey].recordings;
 
-        const color = getColor(speciesCount, maxSpeciesCount);
-        const rectangle = L.rectangle(
-            [[gridLat, gridLng], [gridLat + gridSize, gridLng + gridSize]],
-            { color: color, weight: 1 }
-        ).bindTooltip(`${recordingsCount} recordings from ${speciesCount} unique species`);
-        rectanglesGroup.addLayer(rectangle);
-    }
+    const color = getColor(speciesCount, maxSpeciesCount);
+    const rectangle = L.rectangle(
+        [[gridLat, gridLng], [gridLat + gridSize, gridLng + gridSize]],
+        { 
+            color: color, 
+            weight: 1, 
+            fillOpacity: 0.5  
+        }
+    ).bindTooltip(`${recordingsCount} recordings from ${speciesCount} unique species`);
+    rectanglesGroup.addLayer(rectangle);
+}
+
 
     map.addLayer(markers);
     map.addLayer(rectanglesGroup);
@@ -290,7 +321,7 @@ if (currentZoom <= 3 && drawnBounds) {
 }
 
 function updateVisibilityBasedOnZoom(zoom) {
-    if (zoom > 9) {
+    if (zoom > 11) {
         rectanglesGroup.removeFrom(map);
         map.addLayer(markers);
     } else {
@@ -298,23 +329,27 @@ function updateVisibilityBasedOnZoom(zoom) {
         rectanglesGroup.addTo(map);
     }
 }
+
+
 function getGridSizeForZoom(zoom) {
+    console.log(zoom);
     if (zoom <= 3 && drawnBounds) {  // Use the stored bounds
         const widthInDegrees = drawnBounds.getEast() - drawnBounds.getWest();
         return widthInDegrees;
     }
-    if (zoom >= 10) return 0.1;
-    if (zoom >= 7) return 0.5;
-    return 1;
+    if (zoom >= 8) return 0.2;
+    if (zoom >= 4) return 0.6;
 }
 
 
 function getColor(count, maxCount) {
-    if (count <= maxCount * 0.25) return 'blue';
-    if (count <= maxCount * 0.5) return 'yellow';
-    if (count <= maxCount * 0.75) return 'orange';
-    return 'red';
+    if (count <= maxCount * 0.25) return '#C8A2C8';   // lilac (lightest purple)
+    if (count <= maxCount * 0.5) return '#7B5ED1';    // medium purple (medium slate blue)
+    if (count <= maxCount * 0.75) return '#FF8C00';   // pale violet red (reddish-purple or dark pink)
+    return '#FF0000';  // red
 }
+
+
 
 var legend = L.control({ position: 'topright' });
 legend.onAdd = function (map) {
@@ -323,10 +358,16 @@ legend.onAdd = function (map) {
     return div;
 };
 
+
+
 function getLegendContent(maxCount) {
-    const grades = [0, 0.25 * maxCount, 0.5 * maxCount, 0.75 * maxCount];
+    const grades = [
+        0, 
+        Math.round(0.25 * maxCount), 
+        Math.round(0.5 * maxCount), 
+        Math.round(0.75 * maxCount)
+    ];
     let labels = [];
-    let lastGrade = -1;
     const gridSizeInDegrees = getGridSizeForZoom(map.getZoom());
     
     // Convert grid size in degrees to kilometers
@@ -336,19 +377,17 @@ function getLegendContent(maxCount) {
     labels.push('<strong>Number of unique species</strong>');
   
     for (let i = 0; i < grades.length; i++) {
-        if (grades[i] !== lastGrade) {
-            labels.push(
-                `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]}${grades[i + 1] && grades[i + 1] !== lastGrade ? ' &ndash; ' + grades[i + 1] : '+'}`
-            );
-            lastGrade = grades[i];
-        }
+        labels.push(
+            `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${
+                grades[i]
+            }${grades[i + 1] ? ' &ndash; ' + (grades[i + 1] - 1) : '+'}`
+        );
     }
     
     labels.push(`<br>Grid size: ~${gridSizeInKm.toFixed(2)} km`);
 
     return labels.join('<br>');
 }
-
 
 
 
