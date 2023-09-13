@@ -125,7 +125,7 @@ new L.basemapsSwitcher([
   {
     layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles &copy; Esri'
-    }).setOpacity(0.8).addTo(map),//DEFAULT MAP
+    }).setOpacity(0.9).addTo(map),//DEFAULT MAP
     maxZoom: 17,
     bounds: validBounds,
     icon: 'terrain.jpeg',
@@ -134,7 +134,7 @@ new L.basemapsSwitcher([
   {
     layer: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).setOpacity(0.7),
+    }).setOpacity(0.8),
     icon: 'topo.jpg',
     bounds: validBounds,
     name: 'OpenTopo'
@@ -143,7 +143,7 @@ new L.basemapsSwitcher([
   {
     layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-    }).setOpacity(0.7),
+    }).setOpacity(0.8),
     maxZoom: 21,
     icon: 'satellite.jpg',
     bounds: validBounds,
