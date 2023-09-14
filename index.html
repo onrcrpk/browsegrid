@@ -49,34 +49,49 @@
         }
 
         #toggle-btn {
-        background-color: #f5f5f5;  /* Light gray background */
-        color: #333;                /* Almost black text */
-        border: 1px solid #ddd;     /* Slightly darker gray border */
-        padding: 10px 0;            /* Padding only on top and bottom, since we're setting a fixed width */
-        cursor: pointer;            /* Hand cursor on hover */
-        border-radius: 5px;         /* Softly rounded corners */
-        font-size: 0.9em;           /* Moderate font size */
-        transition: background-color 0.3s, color 0.3s;  /* Smooth transition effect */
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  /* A subtle shadow for some depth */
+            display: none;
+            background-color: #f5f5f5;
+            /* Light gray background */
+            color: #333;
+            /* Almost black text */
+            border: 1px solid #ddd;
+            /* Slightly darker gray border */
+            padding: 10px 0;
+            /* Padding only on top and bottom, since we're setting a fixed width */
+            cursor: pointer;
+            /* Hand cursor on hover */
+            border-radius: 5px;
+            /* Softly rounded corners */
+            font-size: 0.9em;
+            /* Moderate font size */
+            transition: background-color 0.3s, color 0.3s;
+            /* Smooth transition effect */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            /* A subtle shadow for some depth */
 
-        width: 155px;               /* Fixed width */
-        text-align: center;         /* Center the text horizontally */
-        display: inline-block;      /* Allows the button to be used inline with other elements but maintain block styling properties */
-        line-height: normal;        /* Ensures consistent vertical alignment of text */
-    }
+            width: 155px;
+            /* Fixed width */
+            text-align: center;
+            /* Center the text horizontally */
+            display: inline-block;
+            /* Allows the button to be used inline with other elements but maintain block styling properties */
+            line-height: normal;
+            /* Ensures consistent vertical alignment of text */
+        }
 
-    #toggle-btn:hover {
-        background-color: #e5e5e5;  /* Slightly darker gray when hovered */
-        color: #222;                /* Darker text for contrast */
-    }
+        #toggle-btn:hover {
+            background-color: #e5e5e5;
+            /* Slightly darker gray when hovered */
+            color: #222;
+            /* Darker text for contrast */
+        }
 
-    #toggle-btn:active {
-        background-color: #d5d5d5;  /* Even darker when pressed */
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);  /* Reduced shadow for "pressed" effect */
-    }
-
-
-
+        #toggle-btn:active {
+            background-color: #d5d5d5;
+            /* Even darker when pressed */
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            /* Reduced shadow for "pressed" effect */
+        }
     </style>
 
 
@@ -206,7 +221,7 @@
 
 
         var isLoadingData = false;
-        
+
         var rectanglesGroup = new L.LayerGroup();
         var drawnItems = new L.FeatureGroup();
         var fetchedData = null;
@@ -227,6 +242,8 @@
         map.addLayer(drawnItems);
 
         L.drawLocal.draw.handlers.rectangle.tooltip.start = "Click and drag a reactangle on desired area";
+
+
 
         var drawControl = new L.Control.Draw({
             draw: {
@@ -251,13 +268,12 @@
         map.on(L.Draw.Event.CREATED, function (event) {
             var layer = event.layer;
             drawnBounds = layer.getBounds();
-            drawnItems.clearLayers();
             drawnItems.addLayer(layer);
             var bounds = layer.getBounds();
 
-                // Set the legend content to "Loading..."
-    $(".info.legend").html("Loading...");
-    isLoadingData = true;  // Set the loading state
+            // Set the legend content to "Loading..." immediately after drawing the rectangle
+            $(".info.legend").html("Loading...");
+            isLoadingData = true;  // Set the loading state
 
             var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
             fetchDataAndCreateGrid(apiUrl);
@@ -267,17 +283,17 @@
 
 
 
-        
-map.on('zoomend', function () {
-    if (isLoadingData) {
-        $(".info.legend").html("Loading...");  // Make sure to show "Loading..." if we're still fetching data
-    } else {
-        if (fetchedData) {
-            processDataAndCreateGrid(fetchedData);
-        }
-        updateVisibilityBasedOnZoom(map.getZoom());
-    }
-});
+
+        map.on('zoomend', function () {
+            if (isLoadingData) {
+                $(".info.legend").html("Loading...");  // Make sure to show "Loading..." if we're still fetching data
+            } else {
+                if (fetchedData) {
+                    processDataAndCreateGrid(fetchedData);
+                }
+                updateVisibilityBasedOnZoom(map.getZoom());
+            }
+        });
 
 
 
@@ -285,19 +301,19 @@ map.on('zoomend', function () {
 
 
         function fetchDataAndCreateGrid(apiUrl) {
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            isLoadingData = false;  // Reset the loading state
-            fetchedData = data;
-            processDataAndCreateGrid(data);
-            $(".info.legend").show();
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
-            isLoadingData = false;  // Reset the loading state even if there's an error
-        });
-}
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    isLoadingData = false;  // Reset the loading state
+                    fetchedData = data;
+                    processDataAndCreateGrid(data);
+                    $(".info.legend").show();
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    isLoadingData = false;  // Reset the loading state even if there's an error
+                });
+        }
 
         function processDataAndCreateGrid(data) {
             let zoomLevel = map.getZoom();
@@ -400,15 +416,15 @@ map.on('zoomend', function () {
                 );
 
                 rectangle.bindTooltip(`${recordingsCount} recordings from ${speciesCount} species`);
-    rectangle.on('mouseover', function(e) {
-        e.target.openTooltip();
-    });
-    rectangle.on('mouseout', function(e) {
-        e.target.closeTooltip();
-    });
+                rectangle.on('mouseover', function (e) {
+                    e.target.openTooltip();
+                });
+                rectangle.on('mouseout', function (e) {
+                    e.target.closeTooltip();
+                });
 
-    rectanglesGroup.addLayer(rectangle);
-}
+                rectanglesGroup.addLayer(rectangle);
+            }
 
 
             map.addLayer(markers);
@@ -417,28 +433,36 @@ map.on('zoomend', function () {
 
         }
 
-        // Function to update visibility based on zoom level
         function updateVisibilityBasedOnZoom(zoom) {
+            const toggleButton = document.getElementById('toggle-btn');
+
+
+
             if (zoom > 11) {
                 rectanglesGroup.removeFrom(map);
                 map.addLayer(markers);
                 if (drawnBounds) {
                     showLegend();
+                    toggleButton.style.display = 'block';
                 } else {
                     hideLegend();
+                    toggleButton.style.display = 'none';
                 }
             } else if (zoom >= 4) {
                 map.removeLayer(markers);
                 rectanglesGroup.addTo(map);
                 if (drawnBounds) {
                     showLegend();
+                    toggleButton.style.display = 'block';
                 } else {
                     hideLegend();
+                    toggleButton.style.display = 'none';
                 }
             } else {
                 map.removeLayer(markers);
                 rectanglesGroup.addTo(map);
-                hideLegend();
+                hideLegend(); // This ensures that the legend is hidden at zoom levels 1-3.
+                toggleButton.style.display = 'none';
             }
         }
 
@@ -464,25 +488,26 @@ map.on('zoomend', function () {
             if (zoom >= 9) return 0.2;
             if (zoom >= 3) return 0.5;
         }
-        
-        
+
+
         function getColor(count, maxCount) {
-    const fraction = count / maxCount;
+            const fraction = count / maxCount;
 
-    if (fraction <= 0.2) return '#74A9CF';       // Light lavender
-    if (fraction <= 0.4) return '#2B8CBE';       // Sky blue
-    if (fraction <= 0.6) return '#FED976';       // Medium blue
-    if (fraction <= 0.8) return '#FB6A4A';       // Deep blue
-    return '#E31A1C';                            //  red
-}
-
+            if (fraction <= 0.2) return '#74A9CF';       // Light lavender
+            if (fraction <= 0.4) return '#2B8CBE';       // Sky blue
+            if (fraction <= 0.6) return '#FED976';       // Medium blue
+            if (fraction <= 0.8) return '#FB6A4A';       // Deep blue
+            return '#E31A1C';                            //  red
+        }
 
 
 
 
         map.on('boxzoomend', function (e) {
             drawnBounds = e.boxZoomBounds;
-            drawnItems.clearLayers();
+            // Set the legend content to "Loading..." immediately after drawing the rectangle
+            $(".info.legend").html("Loading...");
+            isLoadingData = true;  // Set the loading state
 
             // Create a rectangle from the bounds and add to the map
             let layer = L.rectangle([drawnBounds.getSouthWest(), drawnBounds.getNorthEast()]);
@@ -493,19 +518,16 @@ map.on('zoomend', function () {
             var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
             fetchDataAndCreateGrid(apiUrl);
             drawnItems.clearLayers();
-                            // Set the legend content to "Loading..."
-    $(".info.legend").html("Loading...");
-    isLoadingData = true;  // Set the loading state
         });
-
 
 
 
         toggleControl.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'toggle-control');
-            div.innerHTML = '<button id="toggle-btn">Switch to Recordings</button>';
+            div.innerHTML = '<button id="toggle-btn" style="display: none;">Switch to Recordings</button>';
             return div;
         };
+
 
         toggleControl.addTo(map);
         document.getElementById('toggle-btn').addEventListener('click', function () {
@@ -532,15 +554,15 @@ map.on('zoomend', function () {
 
 
 
-       function getLegendContent(maxCount) {
-    if(!maxCount || maxCount === 0) {
-        return "Loading...";
-    }
-                    const grades = [
-                0, 
+        function getLegendContent(maxCount) {
+            if (!maxCount || maxCount === 0) {
+                return "Loading...";
+            }
+            const grades = [
+                0,
                 Math.round(0.2 * maxCount),
-                Math.round(0.4 * maxCount), 
-                Math.round(0.6 * maxCount), 
+                Math.round(0.4 * maxCount),
+                Math.round(0.6 * maxCount),
                 Math.round(0.8 * maxCount)
             ];
 
@@ -580,6 +602,7 @@ map.on('zoomend', function () {
 
 
         legend.addTo(map);
+        updateVisibilityBasedOnZoom(map.getZoom());
 
 
     </script>
