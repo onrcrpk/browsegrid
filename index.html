@@ -31,11 +31,14 @@
             border-radius: 5px;
             line-height: 24px;
             color: #555;
-            width: 180px; /* for example, adjust accordingly */
-            height: 180px; /* adjust accordingly */
+            width: 180px;
+            /* for example, adjust accordingly */
+            height: 200px;
+            /* adjust accordingly */
             box-sizing: border-box;
-            overflow: hidden; /* ensure content doesn't overflow */
-                }
+            overflow: hidden;
+            /* ensure content doesn't overflow */
+        }
 
         .info.legend i {
             width: 18px;
@@ -46,29 +49,29 @@
         }
 
         .centeredTooltip {
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-    color: #000;
-    font-size: 9px; 
-}
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            color: #000;
+            font-size: 9px;
+        }
 
-.switch-button {
-    width: 50px; /* for example */
-    height: 30px; /* for example */
-    box-sizing: border-box;
-    padding: 6px 8px; /* adjust if needed */
-    font: 14px Arial, Helvetica, sans-serif;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid #555; /* adjust if needed */
-    border-radius: 5px;
-    overflow: hidden; /* prevent any content from overflowing */
-}
-
-
-
-
-
+        .switch-button {
+            width: 50px;
+            /* for example */
+            height: 30px;
+            /* for example */
+            box-sizing: border-box;
+            padding: 6px 8px;
+            /* adjust if needed */
+            font: 14px Arial, Helvetica, sans-serif;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #555;
+            /* adjust if needed */
+            border-radius: 5px;
+            overflow: hidden;
+            /* prevent any content from overflowing */
+        }
     </style>
 
 
@@ -126,418 +129,429 @@
     <div id="map-legend"></div>
 
 
-  </div>
-  
-
-      <script>
-
-var validBounds = L.latLngBounds(L.latLng(-95, -270), L.latLng(95, 270));
-
-// Create a Leaflet map and set the initial view
-var map = L.map('leaflet-map', {
-  maxBounds: validBounds,
-  zoomControl: false // default zoom control is on the left top.
-}).setView([40, 0], 2);
+    </div>
 
 
-L.control.zoom({ position: 'bottomright' }).addTo(map);
+    <script>
 
-// Add a scale control to the map that only shows kilometers
-L.control.scale({ metric: true, imperial: false }).addTo(map);
+        var validBounds = L.latLngBounds(L.latLng(-95, -270), L.latLng(95, 270));
 
-map.addControl(new L.Control.Fullscreen({ position: 'topright' }));
-
-
-
-// Define basemap layers with their respective properties
-new L.basemapsSwitcher([
-  {
-    layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles &copy; Esri'
-    }).setOpacity(0.9).addTo(map),//DEFAULT MAP
-    maxZoom: 17,
-    bounds: validBounds,
-    icon: 'terrain.jpeg',
-    name: 'Terrain'
-  },
-  {
-    layer: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).setOpacity(0.7),
-    icon: 'topo.jpg',
-    bounds: validBounds,
-    name: 'OpenTopo'
-  },
-
-  {
-    layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-    }).setOpacity(0.7),
-    maxZoom: 21,
-    icon: 'satellite.jpg',
-    bounds: validBounds,
-    name: 'Satellite'
-  },
-  {
-    layer: L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors)'
-    }),
-    icon: 'osm.png',
-    bounds: validBounds,
-    name: 'OSM'
-  },
-], { position: 'bottomleft' }).addTo(map);
+        // Create a Leaflet map and set the initial view
+        var map = L.map('leaflet-map', {
+            maxBounds: validBounds,
+            zoomControl: false // default zoom control is on the left top.
+        }).setView([40, 0], 2);
 
 
-var markers = L.markerClusterGroup({
-    spiderfyOnMaxZoom: false, 
-    removeOutsideVisibleBounds: true,
-    showCoverageOnHover: false,
-    zoomToBoundsOnClick: false
-});
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-var rectanglesGroup = new L.LayerGroup();
-var drawnItems = new L.FeatureGroup();
-var fetchedData = null;  
-var drawnBounds = null; 
-let toggleState = 'species';  // Default is species
-var maxSpeciesCount = 0;
-var maxRecordingsCount = 0;
+        // Add a scale control to the map that only shows kilometers
+        L.control.scale({ metric: true, imperial: false }).addTo(map);
 
-var toggleControl = L.control({ position: 'topright' });
-
-markers.on('clusterclick', function(event) {
-    let childMarkers = event.layer.getAllChildMarkers();
-    let titlesList = childMarkers.map(marker => marker.options.title || 'No Title').join('<br>');
-    event.layer.bindPopup(titlesList).openPopup();
-});
+        map.addControl(new L.Control.Fullscreen({ position: 'topright' }));
 
 
-map.addLayer(drawnItems);
 
-L.drawLocal.draw.handlers.rectangle.tooltip.start = "Click and drag a reactangle on desired area";
+        // Define basemap layers with their respective properties
+        new L.basemapsSwitcher([
+            {
+                layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri'
+                }).setOpacity(0.9).addTo(map),//DEFAULT MAP
+                maxZoom: 17,
+                bounds: validBounds,
+                icon: 'terrain.jpeg',
+                name: 'Terrain'
+            },
+            {
+                layer: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).setOpacity(0.7),
+                icon: 'topo.jpg',
+                bounds: validBounds,
+                name: 'OpenTopo'
+            },
 
-var drawControl = new L.Control.Draw({
-    draw: {
-        polyline: false,
-        polygon: false,
-        circle: false,
-        marker: false,
-        circlemarker: false,
-        rectangle: {
-            shapeOptions: {},
-        }
-    },
-    edit: {
-        featureGroup: drawnItems,
-        edit: false,
-        remove: false
-    }
-});
-map.addControl(drawControl);
+            {
+                layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+                }).setOpacity(0.7),
+                maxZoom: 21,
+                icon: 'satellite.jpg',
+                bounds: validBounds,
+                name: 'Satellite'
+            },
+            {
+                layer: L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors)'
+                }),
+                icon: 'osm.png',
+                bounds: validBounds,
+                name: 'OSM'
+            },
+        ], { position: 'bottomleft' }).addTo(map);
 
 
-map.on(L.Draw.Event.CREATED, function(event) {
-    var layer = event.layer;
-    drawnBounds = layer.getBounds(); 
-    drawnItems.clearLayers();
-    drawnItems.addLayer(layer);
-    var bounds = layer.getBounds();
-
-    var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
-    fetchDataAndCreateGrid(apiUrl);
-    console.log(apiUrl);
-    drawnItems.clearLayers();
-});
-
-map.on('zoomend', function() {
-    if (fetchedData) {
-        processDataAndCreateGrid(fetchedData);
-    }
-    updateVisibilityBasedOnZoom(map.getZoom());
-});
-
-function fetchDataAndCreateGrid(apiUrl) {
-    fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-            fetchedData = data;
-            processDataAndCreateGrid(data);
-            $(".info.legend").show();
-
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
+        var markers = L.markerClusterGroup({
+            spiderfyOnMaxZoom: false,
+            removeOutsideVisibleBounds: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: false
         });
-}
 
-function processDataAndCreateGrid(data) {
-    let zoomLevel = map.getZoom();
-    let gridSize = getGridSizeForZoom(zoomLevel);
-    markers.clearLayers();
-    rectanglesGroup.clearLayers();
+        var rectanglesGroup = new L.LayerGroup();
+        var drawnItems = new L.FeatureGroup();
+        var fetchedData = null;
+        var drawnBounds = null;
+        let toggleState = 'species';  // Default is species
+        var maxSpeciesCount = 0;
+        var maxRecordingsCount = 0;
 
-    const gridCounts = {};
-    let maxSpeciesCount = 0;
-    let maxRecordingsCount = 0; // Add this for max recordings
+        var toggleControl = L.control({ position: 'topright' });
 
-    data.markers.forEach(markerData => {
-        const markerIcon = L.icon({
-            iconUrl: 'marker-icon.png',
-            iconSize: [15, 15],
+        markers.on('clusterclick', function (event) {
+            let childMarkers = event.layer.getAllChildMarkers();
+            let titlesList = childMarkers.map(marker => marker.options.title || 'No Title').join('<br>');
+            event.layer.bindPopup(titlesList).openPopup();
         });
-        const marker = L.marker([markerData.lat, markerData.lon], { 
-    icon: markerIcon,
-    title: markerData.title
-});
-        markers.addLayer(marker);
-        
-        const gridLat = Math.floor(markerData.lat / gridSize) * gridSize;
-        const gridLng = Math.floor(markerData.lon / gridSize) * gridSize;
-        const gridKey = `${gridLat},${gridLng}`;
-        const species = markerData.title.split(":")[1]?.trim();
 
-        if (!gridCounts[gridKey]) {
-            gridCounts[gridKey] = {
-                species: new Set(),
-                recordings: 0
-            };
+
+        map.addLayer(drawnItems);
+
+        L.drawLocal.draw.handlers.rectangle.tooltip.start = "Click and drag a reactangle on desired area";
+
+        var drawControl = new L.Control.Draw({
+            draw: {
+                polyline: false,
+                polygon: false,
+                circle: false,
+                marker: false,
+                circlemarker: false,
+                rectangle: {
+                    shapeOptions: {},
+                }
+            },
+            edit: {
+                featureGroup: drawnItems,
+                edit: false,
+                remove: false
+            }
+        });
+        map.addControl(drawControl);
+
+
+        map.on(L.Draw.Event.CREATED, function (event) {
+            var layer = event.layer;
+            drawnBounds = layer.getBounds();
+            drawnItems.clearLayers();
+            drawnItems.addLayer(layer);
+            var bounds = layer.getBounds();
+
+            var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
+            fetchDataAndCreateGrid(apiUrl);
+            console.log(apiUrl);
+            drawnItems.clearLayers();
+        });
+
+        map.on('zoomend', function () {
+            if (fetchedData) {
+                processDataAndCreateGrid(fetchedData);
+            }
+            updateVisibilityBasedOnZoom(map.getZoom());
+        });
+
+        function fetchDataAndCreateGrid(apiUrl) {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    fetchedData = data;
+                    processDataAndCreateGrid(data);
+                    $(".info.legend").show();
+
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
         }
-        if (species) {
-            gridCounts[gridKey].species.add(species);
-        }
-        gridCounts[gridKey].recordings++;
-        maxRecordingsCount = Math.max(maxRecordingsCount, gridCounts[gridKey].recordings); // Track the maximum recording count
+
+        function processDataAndCreateGrid(data) {
+            let zoomLevel = map.getZoom();
+            let gridSize = getGridSizeForZoom(zoomLevel);
+            markers.clearLayers();
+            rectanglesGroup.clearLayers();
+
+            const gridCounts = {};
+            let maxSpeciesCount = 0;
+            let maxRecordingsCount = 0; // Add this for max recordings
+
+            data.markers.forEach(markerData => {
+                const markerIcon = L.icon({
+                    iconUrl: 'marker-icon.png',
+                    iconSize: [15, 15],
+                });
+                const marker = L.marker([markerData.lat, markerData.lon], {
+                    icon: markerIcon,
+                    title: markerData.title
+                });
+                markers.addLayer(marker);
+
+                const gridLat = Math.floor(markerData.lat / gridSize) * gridSize;
+                const gridLng = Math.floor(markerData.lon / gridSize) * gridSize;
+                const gridKey = `${gridLat},${gridLng}`;
+                const species = markerData.title.split(":")[1]?.trim();
+
+                if (!gridCounts[gridKey]) {
+                    gridCounts[gridKey] = {
+                        species: new Set(),
+                        recordings: 0
+                    };
+                }
+                if (species) {
+                    gridCounts[gridKey].species.add(species);
+                }
+                gridCounts[gridKey].recordings++;
+                maxRecordingsCount = Math.max(maxRecordingsCount, gridCounts[gridKey].recordings); // Track the maximum recording count
+            });
+
+            for (let gridKey in gridCounts) {
+                if (toggleState === 'species') {
+                    maxSpeciesCount = Math.max(maxSpeciesCount, gridCounts[gridKey].species.size);
+
+                } else {
+                    maxRecordingsCount = Math.max(maxRecordingsCount, gridCounts[gridKey].recordings);
+
+                }
+            }
+
+            // Update the legend content dynamically
+            const maxCount = toggleState === 'species' ? maxSpeciesCount : maxRecordingsCount;
+            $(".info.legend").html(getLegendContent(maxCount));
+
+            const currentZoom = map.getZoom();
+
+            if (currentZoom <= 3 && drawnBounds) {
+                rectanglesGroup.clearLayers();
+
+                let totalSpecies = 0;
+                let totalRecordings = 0;
+
+                for (let key in gridCounts) {
+                    totalSpecies += gridCounts[key].species.size;
+                    totalRecordings += gridCounts[key].recordings;
+                }
+
+                const color = toggleState === 'species'
+                    ? getColor(totalSpecies, maxSpeciesCount * Object.keys(gridCounts).length)
+                    : getColor(totalRecordings, maxSpeciesCount * Object.keys(gridCounts).length);
+
+
+                let rectangle = L.rectangle(
+                    [drawnBounds.getSouthWest(), drawnBounds.getNorthEast()],
+                    { color: color, weight: 1 }
+                ).bindTooltip(`${data.markers.length} recordings from ${new Set(data.markers.map(m => m.title.split(":")[1]?.trim())).size} species`);
+                rectanglesGroup.addLayer(rectangle);
+
+                map.addLayer(rectanglesGroup);
+                return;
+            }
+
+
+            for (let gridKey in gridCounts) {
+                const [gridLat, gridLng] = gridKey.split(',').map(Number);
+                const speciesCount = gridCounts[gridKey].species.size;
+                const recordingsCount = gridCounts[gridKey].recordings;
+
+                const color = toggleState === 'species'
+                    ? getColor(speciesCount, maxSpeciesCount, 'species')
+                    : getColor(recordingsCount, maxRecordingsCount, 'recordings'); // Use maxRecordingsCount for recordings
+
+                const rectangle = L.rectangle(
+                    [[gridLat, gridLng], [gridLat + gridSize, gridLng + gridSize]],
+                    {
+                        color: color,
+                        weight: 1.2,
+                        fillOpacity: 0.7
+                    }
+                );
+
+                rectangle.bindTooltip(`${recordingsCount} recordings from ${speciesCount} species`);
+    rectangle.on('mouseover', function(e) {
+        e.target.openTooltip();
+    });
+    rectangle.on('mouseout', function(e) {
+        e.target.closeTooltip();
     });
 
-    for (let gridKey in gridCounts) {
-    if (toggleState === 'species') {
-        maxSpeciesCount = Math.max(maxSpeciesCount, gridCounts[gridKey].species.size);
-    
-    } else {
-        maxRecordingsCount = Math.max(maxRecordingsCount, gridCounts[gridKey].recordings);
-    
-    }
-}
-
-// Update the legend content dynamically
-const maxCount = toggleState === 'species' ? maxSpeciesCount : maxRecordingsCount;
-$(".info.legend").html(getLegendContent(maxCount));
-    
-    const currentZoom = map.getZoom();
-
-if (currentZoom <= 3 && drawnBounds) {
-    rectanglesGroup.clearLayers();
-    
-    let totalSpecies = 0;
-    let totalRecordings = 0;
-
-    for (let key in gridCounts) {
-        totalSpecies += gridCounts[key].species.size;
-        totalRecordings += gridCounts[key].recordings;
-    }
-
-    const color = toggleState === 'species' 
-    ? getColor(totalSpecies, maxSpeciesCount * Object.keys(gridCounts).length) 
-    : getColor(totalRecordings, maxSpeciesCount * Object.keys(gridCounts).length);
-    
-    
-        let rectangle = L.rectangle(
-        [drawnBounds.getSouthWest(), drawnBounds.getNorthEast()],
-        { color: color, weight: 1 }
-    ).bindTooltip(`${data.markers.length} recordings from ${new Set(data.markers.map(m => m.title.split(":")[1]?.trim())).size} species`);
     rectanglesGroup.addLayer(rectangle);
-    
-    map.addLayer(rectanglesGroup);
-    return;
 }
 
 
-for (let gridKey in gridCounts) {
-        const [gridLat, gridLng] = gridKey.split(',').map(Number);
-        const speciesCount = gridCounts[gridKey].species.size;
-        const recordingsCount = gridCounts[gridKey].recordings;
+            map.addLayer(markers);
+            map.addLayer(rectanglesGroup);
+            updateVisibilityBasedOnZoom(map.getZoom());
 
-        const color = toggleState === 'species' 
-            ? getColor(speciesCount, maxSpeciesCount, 'species') 
-            : getColor(recordingsCount, maxRecordingsCount, 'recordings'); // Use maxRecordingsCount for recordings
-
-            const rectangle = L.rectangle(
-    [[gridLat, gridLng], [gridLat + gridSize, gridLng + gridSize]],
-    { 
-        color: color, 
-        weight: 1, 
-        fillOpacity: 0.7  
-    }
-);
-
-        rectanglesGroup.addLayer(rectangle);
-    }
-
-
-    map.addLayer(markers);
-    map.addLayer(rectanglesGroup);
-    updateVisibilityBasedOnZoom(map.getZoom());
-    
-}
-
-// Function to update visibility based on zoom level
-function updateVisibilityBasedOnZoom(zoom) {
-    if (zoom > 11) {
-        rectanglesGroup.removeFrom(map);
-        map.addLayer(markers);
-        if (drawnBounds) {
-            showLegend();
-        } else {
-            hideLegend();
         }
-    } else if (zoom >= 4) {
-        map.removeLayer(markers);
-        rectanglesGroup.addTo(map);
-        if (drawnBounds) {
-            showLegend();
-        } else {
-            hideLegend();
+
+        // Function to update visibility based on zoom level
+        function updateVisibilityBasedOnZoom(zoom) {
+            if (zoom > 11) {
+                rectanglesGroup.removeFrom(map);
+                map.addLayer(markers);
+                if (drawnBounds) {
+                    showLegend();
+                } else {
+                    hideLegend();
+                }
+            } else if (zoom >= 4) {
+                map.removeLayer(markers);
+                rectanglesGroup.addTo(map);
+                if (drawnBounds) {
+                    showLegend();
+                } else {
+                    hideLegend();
+                }
+            } else {
+                map.removeLayer(markers);
+                rectanglesGroup.addTo(map);
+                hideLegend();
+            }
         }
-    } else {
-        map.removeLayer(markers);
-        rectanglesGroup.addTo(map);
-        hideLegend();
-    }
-}
 
 
-// Function to show the legend
-function showLegend() {
-    $(".info.legend").show();
-}
+        // Function to show the legend
+        function showLegend() {
+            $(".info.legend").show();
+        }
 
-// Function to hide the legend
-function hideLegend() {
-    $(".info.legend").hide();
-}
+        // Function to hide the legend
+        function hideLegend() {
+            $(".info.legend").hide();
+        }
 
 
 
-function getGridSizeForZoom(zoom) {
-    console.log(zoom);
-    if (zoom <= 2 && drawnBounds) { 
-        const widthInDegrees = drawnBounds.getEast() - drawnBounds.getWest();
-        return widthInDegrees;
-    }
-    if (zoom >= 9) return 0.2;
-    if (zoom >= 3) return 0.5;
-}
-
-
-function getColor(count, maxCount, type) {
+        function getGridSizeForZoom(zoom) {
+            console.log(zoom);
+            if (zoom <= 2 && drawnBounds) {
+                const widthInDegrees = drawnBounds.getEast() - drawnBounds.getWest();
+                return widthInDegrees;
+            }
+            if (zoom >= 9) return 0.2;
+            if (zoom >= 3) return 0.5;
+        }
+        
+        
+        function getColor(count, maxCount) {
     const fraction = count / maxCount;
 
-    if (fraction <= 0.25) return '#C8A2C8';
-    if (fraction <= 0.5) return '#7B5ED1';
-    if (fraction <= 0.75) return '#FF8C00';
-    return '#FF0000';
+    if (fraction <= 0.2) return '#74A9CF';       // Light lavender
+    if (fraction <= 0.4) return '#2B8CBE';       // Sky blue
+    if (fraction <= 0.6) return '#FED976';       // Medium blue
+    if (fraction <= 0.8) return '#FB6A4A';       // Deep blue
+    return '#E31A1C';                            //  red
 }
 
 
 
-map.on('boxzoomend', function(e) {
-    drawnBounds = e.boxZoomBounds;
-    drawnItems.clearLayers();
-    
-    // Create a rectangle from the bounds and add to the map
-    let layer = L.rectangle([drawnBounds.getSouthWest(), drawnBounds.getNorthEast()]);
-    drawnItems.addLayer(layer);
-
-    var bounds = drawnBounds;
-
-    var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
-    fetchDataAndCreateGrid(apiUrl);
-    drawnItems.clearLayers();
-});
 
 
+        map.on('boxzoomend', function (e) {
+            drawnBounds = e.boxZoomBounds;
+            drawnItems.clearLayers();
 
+            // Create a rectangle from the bounds and add to the map
+            let layer = L.rectangle([drawnBounds.getSouthWest(), drawnBounds.getNorthEast()]);
+            drawnItems.addLayer(layer);
 
-toggleControl.onAdd = function(map) {
-    var div = L.DomUtil.create('div', 'toggle-control');
-    div.innerHTML = '<button id="toggle-btn">Switch to Recordings</button>';
-    return div;
-};
+            var bounds = drawnBounds;
 
-toggleControl.addTo(map);
-document.getElementById('toggle-btn').addEventListener('click', function() {
-    if (toggleState === 'species') {
-        toggleState = 'recordings';
-        this.innerHTML = "Switch to Species";
-    } else {
-        toggleState = 'species';
-        this.innerHTML = "Switch to Recordings";
-    }
-
-    if (fetchedData) {
-        processDataAndCreateGrid(fetchedData);
-    }
-});
-
-
-var legend = L.control({ position: 'topright' });
-legend.onAdd = function (map) {
-    var div = L.DomUtil.create('div', 'info legend');
-    div.innerHTML = getLegendContent(0);  // Initially assume maxCount as 0
-    return div;
-};
+            var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
+            fetchDataAndCreateGrid(apiUrl);
+            drawnItems.clearLayers();
+        });
 
 
 
-function getLegendContent(maxCount) {
-    const grades = [
-        0, 
-        Math.round(0.25 * maxCount), 
-        Math.round(0.5 * maxCount), 
-        Math.round(0.75 * maxCount)
-    ];
-    let labels = [];
 
-    // Convert grid size in degrees to kilometers and calculate the area
-    const gridSizeInDegrees = getGridSizeForZoom(map.getZoom());
-    const gridSizeInKm = gridSizeInDegrees * 111;  // Roughly 111 km per degree of latitude
-    const gridSizeAreaInKm2 = Math.pow(gridSizeInKm, 2);  // Square the distance to get the area
-  
-    // Add the title at the top of the legend
-    labels.push('<strong>' + (toggleState === 'species' 
-        ? 'Number of species' 
-        : 'Number of recordings') + '</strong>');
-  
-    for (let i = 0; i < grades.length; i++) {
-        if(i < grades.length - 1) {
-            labels.push(
-                `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${
-                    grades[i]
-                }${grades[i + 1] ? ' &ndash; ' + (grades[i + 1] - 1) : '+'}`
-            );
-        } else {
-            // For the last range, display it as 76 - maxCount
-            labels.push(
-                `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${
-                    grades[i]
-                } - ${maxCount}`
-            );
+        toggleControl.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'toggle-control');
+            div.innerHTML = '<button id="toggle-btn">Switch to Recordings</button>';
+            return div;
+        };
+
+        toggleControl.addTo(map);
+        document.getElementById('toggle-btn').addEventListener('click', function () {
+            if (toggleState === 'species') {
+                toggleState = 'recordings';
+                this.innerHTML = "Switch to Species";
+            } else {
+                toggleState = 'species';
+                this.innerHTML = "Switch to Recordings";
+            }
+
+            if (fetchedData) {
+                processDataAndCreateGrid(fetchedData);
+            }
+        });
+
+
+        var legend = L.control({ position: 'topright' });
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            //div.innerHTML = getLegendContent(0);  // Initially assume maxCount as 0
+            return div;
+        };
+
+
+
+        function getLegendContent(maxCount) {
+                    const grades = [
+                0, 
+                Math.round(0.2 * maxCount),
+                Math.round(0.4 * maxCount), 
+                Math.round(0.6 * maxCount), 
+                Math.round(0.8 * maxCount)
+            ];
+
+            let labels = [];
+
+            // Convert grid size in degrees to kilometers and calculate the area
+            const gridSizeInDegrees = getGridSizeForZoom(map.getZoom());
+            const gridSizeInKm = gridSizeInDegrees * 111;  // Roughly 111 km per degree of latitude
+            const gridSizeAreaInKm2 = Math.pow(gridSizeInKm, 2);  // Square the distance to get the area
+
+            // Add the title at the top of the legend
+            labels.push('<strong>' + (toggleState === 'species'
+                ? 'Number of species'
+                : 'Number of recordings') + '</strong>');
+
+            for (let i = 0; i < grades.length; i++) {
+                if (i < grades.length - 1) {
+                    labels.push(
+                        `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
+                        }${grades[i + 1] ? ' &ndash; ' + (grades[i + 1] - 1) : '+'}`
+                    );
+                } else {
+                    // For the last range, display it as 76 - maxCount
+                    labels.push(
+                        `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
+                        } - ${maxCount}`
+                    );
+                }
+            }
+
+            // Wrapping the grid size info in a div to adjust spacing
+            labels.push(`<div class="grid-size-info">Grid size: ~${gridSizeInKm.toFixed(2)} km (~${gridSizeAreaInKm2.toFixed(2)} km²)</div>`);
+
+            return labels.join('<br>');
         }
-    }
-    
-    // Wrapping the grid size info in a div to adjust spacing
-    labels.push(`<div class="grid-size-info">Grid size: ~${gridSizeInKm.toFixed(2)} km (~${gridSizeAreaInKm2.toFixed(2)} km²)</div>`);
-
-    return labels.join('<br>');
-}
 
 
 
-legend.addTo(map);
+        legend.addTo(map);
 
 
-      </script>
+    </script>
 
 </body>
 
