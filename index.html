@@ -204,6 +204,9 @@
             zoomToBoundsOnClick: false
         });
 
+
+        var isLoadingData = false;
+        
         var rectanglesGroup = new L.LayerGroup();
         var drawnItems = new L.FeatureGroup();
         var fetchedData = null;
@@ -252,32 +255,49 @@
             drawnItems.addLayer(layer);
             var bounds = layer.getBounds();
 
+                // Set the legend content to "Loading..."
+    $(".info.legend").html("Loading...");
+    isLoadingData = true;  // Set the loading state
+
             var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
             fetchDataAndCreateGrid(apiUrl);
             console.log(apiUrl);
             drawnItems.clearLayers();
         });
 
-        map.on('zoomend', function () {
-            if (fetchedData) {
-                processDataAndCreateGrid(fetchedData);
-            }
-            updateVisibilityBasedOnZoom(map.getZoom());
-        });
+
+
+        
+map.on('zoomend', function () {
+    if (isLoadingData) {
+        $(".info.legend").html("Loading...");  // Make sure to show "Loading..." if we're still fetching data
+    } else {
+        if (fetchedData) {
+            processDataAndCreateGrid(fetchedData);
+        }
+        updateVisibilityBasedOnZoom(map.getZoom());
+    }
+});
+
+
+
+
+
 
         function fetchDataAndCreateGrid(apiUrl) {
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    fetchedData = data;
-                    processDataAndCreateGrid(data);
-                    $(".info.legend").show();
-
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                });
-        }
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            isLoadingData = false;  // Reset the loading state
+            fetchedData = data;
+            processDataAndCreateGrid(data);
+            $(".info.legend").show();
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            isLoadingData = false;  // Reset the loading state even if there's an error
+        });
+}
 
         function processDataAndCreateGrid(data) {
             let zoomLevel = map.getZoom();
@@ -473,6 +493,9 @@
             var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
             fetchDataAndCreateGrid(apiUrl);
             drawnItems.clearLayers();
+                            // Set the legend content to "Loading..."
+    $(".info.legend").html("Loading...");
+    isLoadingData = true;  // Set the loading state
         });
 
 
@@ -509,7 +532,10 @@
 
 
 
-        function getLegendContent(maxCount) {
+       function getLegendContent(maxCount) {
+    if(!maxCount || maxCount === 0) {
+        return "Loading...";
+    }
                     const grades = [
                 0, 
                 Math.round(0.2 * maxCount),
