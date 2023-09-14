@@ -22,37 +22,39 @@
         }
 
         .info.legend {
-    display: none;
-    padding: 6px 8px;
-    font: 13px Arial, Helvetica, sans-serif;
-    background: white;
-    background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
-    line-height: 24px;  /* Adjusted this line-height */
-    color: #555;
-    width: 155px;
-    height: 240px;
-    box-sizing: border-box;
-    overflow: hidden;
-    line-height: 24px; 
-}
+            display: none;
+            padding: 6px 8px;
+            font: 13px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            line-height: 24px;
+            /* Adjusted this line-height */
+            color: #555;
+            width: 155px;
+            height: 240px;
+            box-sizing: border-box;
+            overflow: hidden;
+            line-height: 24px;
+        }
 
-.info.legend i {
-    position: relative;
-    top: 3px;         
-    width: 16px;
-    height: 16px;
-    float: left;
-    margin-right: 8px;
-    opacity: 0.7;
-    vertical-align: middle;  /* Added vertical-align */
-}
+        .info.legend i {
+            position: relative;
+            top: 3px;
+            width: 16px;
+            height: 16px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+            vertical-align: middle;
+            /* Added vertical-align */
+        }
 
-.info.legend span.legend-text {
-    position: relative;
-    top: -4px;        
-}
+        .info.legend span.legend-text {
+            position: relative;
+            top: -4px;
+        }
 
 
 
@@ -398,7 +400,7 @@
 
             const currentZoom = map.getZoom();
 
-            if (currentZoom <= 2 && drawnBounds) {
+            if (currentZoom <= 1 && drawnBounds) {
                 rectanglesGroup.clearLayers();
 
                 let totalSpecies = 0;
@@ -455,34 +457,34 @@
             }
         }
 
-// Process fetched data to create the grid visualization on the map
-function processDataAndCreateGrid(data) {
-    const zoomLevel = map.getZoom();
-    const gridSize = getGridSizeForZoom(zoomLevel);
+        // Process fetched data to create the grid visualization on the map
+        function processDataAndCreateGrid(data) {
+            const zoomLevel = map.getZoom();
+            const gridSize = getGridSizeForZoom(zoomLevel);
 
-    markers.clearLayers();
-    rectanglesGroup.clearLayers();
+            markers.clearLayers();
+            rectanglesGroup.clearLayers();
 
-    const { gridCounts, maxSpeciesCount, maxRecordingsCount } = createMarkersAndCalculateGridCounts(data, gridSize);
+            const { gridCounts, maxSpeciesCount, maxRecordingsCount } = createMarkersAndCalculateGridCounts(data, gridSize);
 
-    const maxCount = toggleState === 'species' ? maxSpeciesCount : maxRecordingsCount;
-    
-    // Calculate total recordings and total species across all grid cells
-    let totalSpecies = new Set();
-    let totalRecordings = 0;
+            const maxCount = toggleState === 'species' ? maxSpeciesCount : maxRecordingsCount;
 
-    for (let key in gridCounts) {
-        totalRecordings += gridCounts[key].recordings;
-        gridCounts[key].species.forEach(species => totalSpecies.add(species));
-    }
+            // Calculate total recordings and total species across all grid cells
+            let totalSpecies = new Set();
+            let totalRecordings = 0;
 
-    $(".info.legend").html(getLegendContent(maxCount, totalRecordings, totalSpecies.size));
+            for (let key in gridCounts) {
+                totalRecordings += gridCounts[key].recordings;
+                gridCounts[key].species.forEach(species => totalSpecies.add(species));
+            }
 
-    generateRectanglesForGrids(data, gridCounts, maxSpeciesCount, maxRecordingsCount, gridSize);
+            $(".info.legend").html(getLegendContent(maxCount, totalRecordings, totalSpecies.size));
 
-    map.addLayer(rectanglesGroup);
-    updateVisibilityBasedOnZoom(map.getZoom());
-}
+            generateRectanglesForGrids(data, gridCounts, maxSpeciesCount, maxRecordingsCount, gridSize);
+
+            map.addLayer(rectanglesGroup);
+            updateVisibilityBasedOnZoom(map.getZoom());
+        }
 
 
 
@@ -502,7 +504,7 @@ function processDataAndCreateGrid(data) {
                     hideLegend();
                     toggleButton.style.display = 'none';
                 }
-            } else if (zoom >= 3) {
+            } else if (zoom >= 2) {
                 map.removeLayer(markers);
                 rectanglesGroup.addTo(map);
                 if (drawnBounds) {
@@ -521,21 +523,16 @@ function processDataAndCreateGrid(data) {
         }
 
 
-
-
-
-
-
         // 5. Utility Functions
         // Determine the grid size based on current zoom level
         function getGridSizeForZoom(zoom) {
             console.log(zoom);
-            if (zoom <= 2 && drawnBounds) {
+            if (zoom <= 1 && drawnBounds) {
                 const widthInDegrees = drawnBounds.getEast() - drawnBounds.getWest();
                 return widthInDegrees;
             }
             if (zoom >= 9) return 0.2;
-            if (zoom >= 3) return 0.5;
+            if (zoom >= 2) return 0.5;
         }
 
         // Determine the color based on the ratio of current count to the max count
@@ -614,56 +611,56 @@ function processDataAndCreateGrid(data) {
 
 
         function getLegendContent(maxCount, totalRecordings, totalSpecies) {
-    if (!maxCount || maxCount === 0) {
-        return "Loading...";
-    }
+            if (!maxCount || maxCount === 0) {
+                return "Loading...";
+            }
 
-    const grades = [
-        0,
-        Math.round(0.2 * maxCount),
-        Math.round(0.4 * maxCount),
-        Math.round(0.6 * maxCount),
-        Math.round(0.8 * maxCount)
-    ];
+            const grades = [
+                0,
+                Math.round(0.2 * maxCount),
+                Math.round(0.4 * maxCount),
+                Math.round(0.6 * maxCount),
+                Math.round(0.8 * maxCount)
+            ];
 
-    let labels = [];
+            let labels = [];
 
-    const gridSizeInDegrees = getGridSizeForZoom(map.getZoom());
-    const gridSizeInKm = gridSizeInDegrees * 111;  
-    const gridSizeAreaInKm2 = Math.pow(gridSizeInKm, 2);
+            const gridSizeInDegrees = getGridSizeForZoom(map.getZoom());
+            const gridSizeInKm = gridSizeInDegrees * 111;
+            const gridSizeAreaInKm2 = Math.pow(gridSizeInKm, 2);
 
-        // Add the totals after the grid size based on the toggle state
-        if (toggleState === 'species') {
-        labels.push(`Total Species: ${totalSpecies}`);
-    } else {
-        labels.push(`Total Recordings: ${totalRecordings}`);
-    }
+            // Add the totals after the grid size based on the toggle state
+            if (toggleState === 'species') {
+                labels.push(`Total Species: ${totalSpecies}`);
+            } else {
+                labels.push(`Total Recordings: ${totalRecordings}`);
+            }
 
-    
-    labels.push('<strong>' + (toggleState === 'species'
-        ? 'Number of species'
-        : 'Number of recordings') + '</strong>');
 
-    for (let i = 0; i < grades.length; i++) {
-        if (i < grades.length - 1) {
-            labels.push(
-                `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
-                }${grades[i + 1] ? ' &ndash; ' + (grades[i + 1] - 1) : '+'}`
-            );
-        } else {
-            labels.push(
-                `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
-                } - ${maxCount}`
-            );
+            labels.push('<strong>' + (toggleState === 'species'
+                ? 'Number of species'
+                : 'Number of recordings') + '</strong>');
+
+            for (let i = 0; i < grades.length; i++) {
+                if (i < grades.length - 1) {
+                    labels.push(
+                        `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
+                        }${grades[i + 1] ? ' &ndash; ' + (grades[i + 1] - 1) : '+'}`
+                    );
+                } else {
+                    labels.push(
+                        `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
+                        } - ${maxCount}`
+                    );
+                }
+            }
+
+            labels.push(`<div class="grid-size-info">Grid size: ~${gridSizeInKm.toFixed(2)} km (~${gridSizeAreaInKm2.toFixed(2)} km²)</div>`);
+
+
+
+            return labels.join('<br>');
         }
-    }
-
-    labels.push(`<div class="grid-size-info">Grid size: ~${gridSizeInKm.toFixed(2)} km (~${gridSizeAreaInKm2.toFixed(2)} km²)</div>`);
-
-
-
-    return labels.join('<br>');
-}
 
 
 
