@@ -22,31 +22,39 @@
         }
 
         .info.legend {
-            display: none;
-            padding: 6px 8px;
-            font: 13px Arial, Helvetica, sans-serif;
-            background: white;
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            line-height: 24px;
-            color: #555;
-            width: 155px;
-            /* for example, adjust accordingly */
-            height: 200px;
-            /* adjust accordingly */
-            box-sizing: border-box;
-            overflow: hidden;
-            /* ensure content doesn't overflow */
-        }
+    display: none;
+    padding: 6px 8px;
+    font: 13px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    line-height: 24px;  /* Adjusted this line-height */
+    color: #555;
+    width: 155px;
+    height: 240px;
+    box-sizing: border-box;
+    overflow: hidden;
+    line-height: 24px; 
+}
 
-        .info.legend i {
-            width: 16px;
-            height: 16px;
-            float: left;
-            margin-right: 8px;
-            opacity: 0.7;
-        }
+.info.legend i {
+    position: relative;
+    top: 3px;         
+    width: 16px;
+    height: 16px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+    vertical-align: middle;  /* Added vertical-align */
+}
+
+.info.legend span.legend-text {
+    position: relative;
+    top: -4px;        
+}
+
+
 
         #toggle-btn {
             display: none;
@@ -259,6 +267,9 @@
         map.on('zoomend', handleZoomEnd);
         map.on('boxzoomend', handleBoxZoomEnd);
 
+
+
+
         // Event handler for clicking on a marker cluster
         markers.on('clusterclick', function (event) {
             let childMarkers = event.layer.getAllChildMarkers();
@@ -266,6 +277,7 @@
             event.layer.bindPopup(titlesList, { autoPan: false }).openPopup();
         });
         map.addLayer(drawnItems);
+
 
 
 
@@ -443,25 +455,35 @@
             }
         }
 
+// Process fetched data to create the grid visualization on the map
+function processDataAndCreateGrid(data) {
+    const zoomLevel = map.getZoom();
+    const gridSize = getGridSizeForZoom(zoomLevel);
 
-        // Process fetched data to create the grid visualization on the map
-        function processDataAndCreateGrid(data) {
-            const zoomLevel = map.getZoom();
-            const gridSize = getGridSizeForZoom(zoomLevel);
+    markers.clearLayers();
+    rectanglesGroup.clearLayers();
 
-            markers.clearLayers();
-            rectanglesGroup.clearLayers();
+    const { gridCounts, maxSpeciesCount, maxRecordingsCount } = createMarkersAndCalculateGridCounts(data, gridSize);
 
-            const { gridCounts, maxSpeciesCount, maxRecordingsCount } = createMarkersAndCalculateGridCounts(data, gridSize);
+    const maxCount = toggleState === 'species' ? maxSpeciesCount : maxRecordingsCount;
+    
+    // Calculate total recordings and total species across all grid cells
+    let totalSpecies = new Set();
+    let totalRecordings = 0;
 
-            const maxCount = toggleState === 'species' ? maxSpeciesCount : maxRecordingsCount;
-            $(".info.legend").html(getLegendContent(maxCount));
+    for (let key in gridCounts) {
+        totalRecordings += gridCounts[key].recordings;
+        gridCounts[key].species.forEach(species => totalSpecies.add(species));
+    }
 
-            generateRectanglesForGrids(data, gridCounts, maxSpeciesCount, maxRecordingsCount, gridSize);
+    $(".info.legend").html(getLegendContent(maxCount, totalRecordings, totalSpecies.size));
 
-            map.addLayer(rectanglesGroup);
-            updateVisibilityBasedOnZoom(map.getZoom());
-        }
+    generateRectanglesForGrids(data, gridCounts, maxSpeciesCount, maxRecordingsCount, gridSize);
+
+    map.addLayer(rectanglesGroup);
+    updateVisibilityBasedOnZoom(map.getZoom());
+}
+
 
 
         // Update the visibility of markers or rectangles based on zoom level
@@ -591,51 +613,60 @@
         };
 
 
-        // Generate the legend content based on max count
-        function getLegendContent(maxCount) {
-            if (!maxCount || maxCount === 0) {
-                return "Loading...";
-            }
-            const grades = [
-                0,
-                Math.round(0.2 * maxCount),
-                Math.round(0.4 * maxCount),
-                Math.round(0.6 * maxCount),
-                Math.round(0.8 * maxCount)
-            ];
+        function getLegendContent(maxCount, totalRecordings, totalSpecies) {
+    if (!maxCount || maxCount === 0) {
+        return "Loading...";
+    }
 
-            let labels = [];
+    const grades = [
+        0,
+        Math.round(0.2 * maxCount),
+        Math.round(0.4 * maxCount),
+        Math.round(0.6 * maxCount),
+        Math.round(0.8 * maxCount)
+    ];
 
-            // Convert grid size in degrees to kilometers and calculate the area
-            const gridSizeInDegrees = getGridSizeForZoom(map.getZoom());
-            const gridSizeInKm = gridSizeInDegrees * 111;  // Roughly 111 km per degree of latitude
-            const gridSizeAreaInKm2 = Math.pow(gridSizeInKm, 2);  // Square the distance to get the area
+    let labels = [];
 
-            // Add the title at the top of the legend
-            labels.push('<strong>' + (toggleState === 'species'
-                ? 'Number of species'
-                : 'Number of recordings') + '</strong>');
+    const gridSizeInDegrees = getGridSizeForZoom(map.getZoom());
+    const gridSizeInKm = gridSizeInDegrees * 111;  
+    const gridSizeAreaInKm2 = Math.pow(gridSizeInKm, 2);
 
-            for (let i = 0; i < grades.length; i++) {
-                if (i < grades.length - 1) {
-                    labels.push(
-                        `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
-                        }${grades[i + 1] ? ' &ndash; ' + (grades[i + 1] - 1) : '+'}`
-                    );
-                } else {
+        // Add the totals after the grid size based on the toggle state
+        if (toggleState === 'species') {
+        labels.push(`Total Species: ${totalSpecies}`);
+    } else {
+        labels.push(`Total Recordings: ${totalRecordings}`);
+    }
 
-                    labels.push(
-                        `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
-                        } - ${maxCount}`
-                    );
-                }
-            }
+    
+    labels.push('<strong>' + (toggleState === 'species'
+        ? 'Number of species'
+        : 'Number of recordings') + '</strong>');
 
-            // Wrapping the grid size info in a div to adjust spacing
-            labels.push(`<div class="grid-size-info">Grid size: ~${gridSizeInKm.toFixed(2)} km (~${gridSizeAreaInKm2.toFixed(2)} km²)</div>`);
-
-            return labels.join('<br>');
+    for (let i = 0; i < grades.length; i++) {
+        if (i < grades.length - 1) {
+            labels.push(
+                `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
+                }${grades[i + 1] ? ' &ndash; ' + (grades[i + 1] - 1) : '+'}`
+            );
+        } else {
+            labels.push(
+                `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
+                } - ${maxCount}`
+            );
         }
+    }
+
+    labels.push(`<div class="grid-size-info">Grid size: ~${gridSizeInKm.toFixed(2)} km (~${gridSizeAreaInKm2.toFixed(2)} km²)</div>`);
+
+
+
+    return labels.join('<br>');
+}
+
+
+
         legend.addTo(map);
 
 
