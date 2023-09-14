@@ -370,7 +370,7 @@
 
             const currentZoom = map.getZoom();
 
-            if (currentZoom <= 3 && drawnBounds) {
+            if (currentZoom <= 2 && drawnBounds) {
                 rectanglesGroup.clearLayers();
 
                 let totalSpecies = 0;
@@ -448,7 +448,7 @@
                     hideLegend();
                     toggleButton.style.display = 'none';
                 }
-            } else if (zoom >= 4) {
+            } else if (zoom >= 3) {
                 map.removeLayer(markers);
                 rectanglesGroup.addTo(map);
                 if (drawnBounds) {
