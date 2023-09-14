@@ -1,158 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grid map</title>
-
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-
-
-
-
-
-    <style>
-        #leaflet-map {
-            height: 500px;
-            width: 960px;
-        }
-
-        .info.legend {
-            display: none;
-            padding: 6px 8px;
-            font: 13px Arial, Helvetica, sans-serif;
-            background: white;
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            line-height: 24px;
-            color: #555;
-            width: 155px;
-            /* for example, adjust accordingly */
-            height: 200px;
-            /* adjust accordingly */
-            box-sizing: border-box;
-            overflow: hidden;
-            /* ensure content doesn't overflow */
-        }
-
-        .info.legend i {
-            width: 16px;
-            height: 16px;
-            float: left;
-            margin-right: 8px;
-            opacity: 0.7;
-        }
-
-        #toggle-btn {
-            display: none;
-            background-color: #f5f5f5;
-            /* Light gray background */
-            color: #333;
-            /* Almost black text */
-            border: 1px solid #ddd;
-            /* Slightly darker gray border */
-            padding: 10px 0;
-            /* Padding only on top and bottom, since we're setting a fixed width */
-            cursor: pointer;
-            /* Hand cursor on hover */
-            border-radius: 5px;
-            /* Softly rounded corners */
-            font-size: 0.9em;
-            /* Moderate font size */
-            transition: background-color 0.3s, color 0.3s;
-            /* Smooth transition effect */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            /* A subtle shadow for some depth */
-
-            width: 155px;
-            /* Fixed width */
-            text-align: center;
-            /* Center the text horizontally */
-            display: inline-block;
-            /* Allows the button to be used inline with other elements but maintain block styling properties */
-            line-height: normal;
-            /* Ensures consistent vertical alignment of text */
-        }
-
-        #toggle-btn:hover {
-            background-color: #e5e5e5;
-            /* Slightly darker gray when hovered */
-            color: #222;
-            /* Darker text for contrast */
-        }
-
-        #toggle-btn:active {
-            background-color: #d5d5d5;
-            /* Even darker when pressed */
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            /* Reduced shadow for "pressed" effect */
-        }
-    </style>
-
-
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"
-        integrity="sha512-6ZCLMiYwTeli2rVh3XAPxy3YoR5fVxGdH/pz+KMCzRY2M65Emgkw00Yqmhh8qLGeYQ3LbVZGdmOX9KUjSKr0TA=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css"
-        integrity="sha512-fYyZwU1wU0QWB4Yutd/Pvhy5J1oWAwFXun1pt+Bps04WSe4Aq6tyHlT4+MHSJhD8JlLfgLuC4CbCnX5KHSjyCg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
-        integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
-    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css'
-        rel='stylesheet' />
-
-
-    <link rel="stylesheet" href="L.switchBasemap.css">
-
-
-    <script type="text/javascript" src="L.switchBasemap.js"></script>
-
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css"
-        integrity="sha512-vJfMKRRm4c4UupyPwGUZI8U651mSzbmmPgR3sdE3LcwBPsdGeARvUM5EcSTg34DK8YIRiIo+oJwNfZPMKEQyug=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"
-        integrity="sha512-ozq8xQKq6urvuU6jNgkfqAmT7jKN2XumbrX1JiB3TnF7tI48DPI4Gy1GXKD/V3EExgAs1V+pRO7vwtS1LHg0Gw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"
-        integrity="sha512-OFs3W4DIZ5ZkrDhBFtsCP6JXtMEDGmhl0QPlmWYBJay40TT1n3gt2Xuw8Pf/iezgW9CdabjkNChRqozl/YADmg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-</head>
-</head>
-
-<body>
-
-    <div id="leaflet-map"></div>
-
-    <div id="map-legend"></div>
-
-
-    </div>
-
-
-    <script>
 
         var validBounds = L.latLngBounds(L.latLng(-95, -270), L.latLng(95, 270));
 
@@ -162,15 +7,9 @@
             zoomControl: false // default zoom control is on the left top.
         }).setView([40, 0], 2);
 
-
         L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-        // Add a scale control to the map that only shows kilometers
         L.control.scale({ metric: true, imperial: false }).addTo(map);
-
         map.addControl(new L.Control.Fullscreen({ position: 'topright' }));
-
-
 
         // Define basemap layers with their respective properties
         new L.basemapsSwitcher([
@@ -212,39 +51,32 @@
         ], { position: 'bottomleft' }).addTo(map);
 
 
+
+
+        // 1. Variable Declarations and Initial Settings
+        // Variables and settings
         var markers = L.markerClusterGroup({
-            spiderfyOnMaxZoom: false,
-            removeOutsideVisibleBounds: true,
-            showCoverageOnHover: false,
-            zoomToBoundsOnClick: false
+            spiderfyOnMaxZoom: !1,
+            removeOutsideVisibleBounds: !0,
+            showCoverageOnHover: !1,
+            zoomToBoundsOnClick: !1
         });
+        var isLoadingData = !1,
+            rectanglesGroup = new L.LayerGroup(),
+            drawnItems = new L.FeatureGroup(),
+            fetchedData = null,
+            drawnBounds = null;
+        let toggleState = "species";
+        var maxSpeciesCount = 0,
+            maxRecordingsCount = 0,
+            toggleControl = L.control({ position: "topright" });
+        const BASE_API_URL = "https://xeno-canto.org/api/internal/region-results";
 
 
-        var isLoadingData = false;
 
-        var rectanglesGroup = new L.LayerGroup();
-        var drawnItems = new L.FeatureGroup();
-        var fetchedData = null;
-        var drawnBounds = null;
-        let toggleState = 'species';  // Default is species
-        var maxSpeciesCount = 0;
-        var maxRecordingsCount = 0;
-
-        var toggleControl = L.control({ position: 'topright' });
-
-        markers.on('clusterclick', function (event) {
-            let childMarkers = event.layer.getAllChildMarkers();
-            let titlesList = childMarkers.map(marker => marker.options.title || 'No Title').join('<br>');
-            event.layer.bindPopup(titlesList).openPopup();
-        });
-
-
-        map.addLayer(drawnItems);
-
+        // Overriding the default tooltip text for rectangle drawing
         L.drawLocal.draw.handlers.rectangle.tooltip.start = "Click and drag a reactangle on desired area";
-
-
-
+        // Configuration for the drawing controls on the map
         var drawControl = new L.Control.Draw({
             draw: {
                 polyline: false,
@@ -265,41 +97,72 @@
         map.addControl(drawControl);
 
 
-        map.on(L.Draw.Event.CREATED, function (event) {
+
+        // 2. Event Listeners and Handlers
+        // Event listeners and controls initialization
+        map.on(L.Draw.Event.CREATED, handleLayerCreation);
+        map.on('zoomend', handleZoomEnd);
+        map.on('boxzoomend', handleBoxZoomEnd);
+
+        // Event handler for clicking on a marker cluster
+        markers.on('clusterclick', function (event) {
+            let childMarkers = event.layer.getAllChildMarkers();
+            let titlesList = childMarkers.map(marker => marker.options.title || 'No Title').join('<br>');
+            event.layer.bindPopup(titlesList).openPopup();
+        });
+        map.addLayer(drawnItems);
+
+
+
+        // 3. Data Fetching and Loading
+        // Update the legend to show a "Loading" state
+        function updateLegendToLoading() {
+            $(".info.legend").html("Loading...");
+            isLoadingData = true;
+        }
+
+        // Construct the API URL based on provided bounds
+        function constructApiUrl(bounds) {
+            return `${BASE_API_URL}?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
+        }
+
+        // Handle creation of a new drawn layer on the map
+        function handleLayerCreation(event) {
             var layer = event.layer;
             drawnBounds = layer.getBounds();
             drawnItems.addLayer(layer);
-            var bounds = layer.getBounds();
 
-            // Set the legend content to "Loading..." immediately after drawing the rectangle
-            $(".info.legend").html("Loading...");
-            isLoadingData = true;  // Set the loading state
-
-            var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
-            fetchDataAndCreateGrid(apiUrl);
-            console.log(apiUrl);
+            updateLegendToLoading();
+            fetchDataAndCreateGrid(constructApiUrl(layer.getBounds()));
             drawnItems.clearLayers();
-        });
+        }
 
-
-
-
-        map.on('zoomend', function () {
+        // Handle the end of a zoom event
+        function handleZoomEnd() {
             if (isLoadingData) {
-                $(".info.legend").html("Loading...");  // Make sure to show "Loading..." if we're still fetching data
+                updateLegendToLoading();
             } else {
                 if (fetchedData) {
                     processDataAndCreateGrid(fetchedData);
                 }
                 updateVisibilityBasedOnZoom(map.getZoom());
             }
-        });
+        }
 
+        // Handle the end of a box zoom event
+        function handleBoxZoomEnd(e) {
+            drawnBounds = e.boxZoomBounds;
 
+            updateLegendToLoading();
 
+            let layer = L.rectangle([drawnBounds.getSouthWest(), drawnBounds.getNorthEast()]);
+            drawnItems.addLayer(layer);
 
+            fetchDataAndCreateGrid(constructApiUrl(drawnBounds));
+            drawnItems.clearLayers();
+        }
 
-
+        // Fetch the data from the provided URL and create a grid on the map
         function fetchDataAndCreateGrid(apiUrl) {
             fetch(apiUrl)
                 .then(response => response.json())
@@ -315,15 +178,13 @@
                 });
         }
 
-        function processDataAndCreateGrid(data) {
-            let zoomLevel = map.getZoom();
-            let gridSize = getGridSizeForZoom(zoomLevel);
-            markers.clearLayers();
-            rectanglesGroup.clearLayers();
 
+        // 4. Grid Visualization and Processing
+        // Create markers and calculate counts for the grid based on fetched data
+        function createMarkersAndCalculateGridCounts(data, gridSize) {
             const gridCounts = {};
             let maxSpeciesCount = 0;
-            let maxRecordingsCount = 0; // Add this for max recordings
+            let maxRecordingsCount = 0;
 
             data.markers.forEach(markerData => {
                 const markerIcon = L.icon({
@@ -357,16 +218,16 @@
             for (let gridKey in gridCounts) {
                 if (toggleState === 'species') {
                     maxSpeciesCount = Math.max(maxSpeciesCount, gridCounts[gridKey].species.size);
-
                 } else {
                     maxRecordingsCount = Math.max(maxRecordingsCount, gridCounts[gridKey].recordings);
-
                 }
             }
 
-            // Update the legend content dynamically
-            const maxCount = toggleState === 'species' ? maxSpeciesCount : maxRecordingsCount;
-            $(".info.legend").html(getLegendContent(maxCount));
+            return { gridCounts, maxSpeciesCount, maxRecordingsCount };
+        }
+
+        // Generate rectangles for the grids based on fetched data
+        function generateRectanglesForGrids(data, gridCounts, maxSpeciesCount, maxRecordingsCount, gridSize) {
 
             const currentZoom = map.getZoom();
 
@@ -425,14 +286,30 @@
 
                 rectanglesGroup.addLayer(rectangle);
             }
-
-
-            map.addLayer(markers);
-            map.addLayer(rectanglesGroup);
-            updateVisibilityBasedOnZoom(map.getZoom());
-
         }
 
+
+        // Process fetched data to create the grid visualization on the map
+        function processDataAndCreateGrid(data) {
+            const zoomLevel = map.getZoom();
+            const gridSize = getGridSizeForZoom(zoomLevel);
+
+            markers.clearLayers();
+            rectanglesGroup.clearLayers();
+
+            const { gridCounts, maxSpeciesCount, maxRecordingsCount } = createMarkersAndCalculateGridCounts(data, gridSize);
+
+            const maxCount = toggleState === 'species' ? maxSpeciesCount : maxRecordingsCount;
+            $(".info.legend").html(getLegendContent(maxCount));
+
+            generateRectanglesForGrids(data, gridCounts, maxSpeciesCount, maxRecordingsCount, gridSize);
+
+            map.addLayer(rectanglesGroup);
+            updateVisibilityBasedOnZoom(map.getZoom());
+        }
+
+
+        // Update the visibility of markers or rectangles based on zoom level
         function updateVisibilityBasedOnZoom(zoom) {
             const toggleButton = document.getElementById('toggle-btn');
 
@@ -467,18 +344,13 @@
         }
 
 
-        // Function to show the legend
-        function showLegend() {
-            $(".info.legend").show();
-        }
-
-        // Function to hide the legend
-        function hideLegend() {
-            $(".info.legend").hide();
-        }
 
 
 
+
+
+        // 5. Utility Functions
+        // Determine the grid size based on current zoom level
         function getGridSizeForZoom(zoom) {
             console.log(zoom);
             if (zoom <= 2 && drawnBounds) {
@@ -489,7 +361,7 @@
             if (zoom >= 3) return 0.5;
         }
 
-
+        // Determine the color based on the ratio of current count to the max count
         function getColor(count, maxCount) {
             const fraction = count / maxCount;
 
@@ -501,36 +373,18 @@
         }
 
 
+        // Function to show the legend
+        function showLegend() {
+            $(".info.legend").show();
+        }
 
+        // Function to hide the legend
+        function hideLegend() {
+            $(".info.legend").hide();
+        }
 
-        map.on('boxzoomend', function (e) {
-            drawnBounds = e.boxZoomBounds;
-            // Set the legend content to "Loading..." immediately after drawing the rectangle
-            $(".info.legend").html("Loading...");
-            isLoadingData = true;  // Set the loading state
-
-            // Create a rectangle from the bounds and add to the map
-            let layer = L.rectangle([drawnBounds.getSouthWest(), drawnBounds.getNorthEast()]);
-            drawnItems.addLayer(layer);
-
-            var bounds = drawnBounds;
-
-            var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
-            fetchDataAndCreateGrid(apiUrl);
-            drawnItems.clearLayers();
-        });
-
-
-
-        toggleControl.onAdd = function (map) {
-            var div = L.DomUtil.create('div', 'toggle-control');
-            div.innerHTML = '<button id="toggle-btn" style="display: none;">Switch to Recordings</button>';
-            return div;
-        };
-
-
-        toggleControl.addTo(map);
-        document.getElementById('toggle-btn').addEventListener('click', function () {
+        // Toggle between the display states (species or recordings)
+        function toggleDisplayState() {
             if (toggleState === 'species') {
                 toggleState = 'recordings';
                 this.innerHTML = "Switch to Species";
@@ -542,9 +396,38 @@
             if (fetchedData) {
                 processDataAndCreateGrid(fetchedData);
             }
-        });
+        }
 
 
+
+        // 6. Controls and Legends
+        // Toggle control button to switch between display states
+        toggleControl.onAdd = function (e) {
+            var t = L.DomUtil.create("div", "toggle-control");
+            t.innerHTML = '<button id="toggle-btn" style="display: none;">Switch to Recordings</button>';
+
+            // Move the event listener code inside this function, after the button is added to the DOM
+            var toggleBtn = t.querySelector("#toggle-btn");
+            toggleBtn.addEventListener("click", toggleDisplayState);
+
+            toggleBtn.addEventListener("mousedown", function () {
+                map.doubleClickZoom.disable();
+            });
+
+            toggleBtn.addEventListener("mouseup", function () {
+                setTimeout(() => map.doubleClickZoom.enable(), 10);
+            });
+
+            return t;
+        };
+        toggleControl.addTo(map);
+
+
+        toggleControl.addTo(map);
+        document.getElementById('toggle-btn').addEventListener('click', toggleDisplayState);
+
+
+        // Legend control on the map
         var legend = L.control({ position: 'topright' });
         legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend');
@@ -553,7 +436,7 @@
         };
 
 
-
+        // Generate the legend content based on max count
         function getLegendContent(maxCount) {
             if (!maxCount || maxCount === 0) {
                 return "Loading...";
@@ -598,18 +481,10 @@
 
             return labels.join('<br>');
         }
-
-
-
         legend.addTo(map);
+
+
+        // Initial visibility update based on current zoom level
         updateVisibilityBasedOnZoom(map.getZoom());
 
 
-    </script>
-
-</body>
-
-
-
-
-</html>
