@@ -263,7 +263,7 @@
         markers.on('clusterclick', function (event) {
             let childMarkers = event.layer.getAllChildMarkers();
             let titlesList = childMarkers.map(marker => marker.options.title || 'No Title').join('<br>');
-            event.layer.bindPopup(titlesList).openPopup();
+            event.layer.bindPopup(titlesList, { autoPan: false }).openPopup();
         });
         map.addLayer(drawnItems);
 
