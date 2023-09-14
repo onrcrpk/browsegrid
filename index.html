@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid map</title>
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+
+
+
+
+    <style>
+        #leaflet-map {
+            height: 500px;
+            width: 960px;
+        }
+
+        .info.legend {
+            display: none;
+            padding: 6px 8px;
+            font: 13px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            line-height: 24px;
+            color: #555;
+            width: 155px;
+            /* for example, adjust accordingly */
+            height: 200px;
+            /* adjust accordingly */
+            box-sizing: border-box;
+            overflow: hidden;
+            /* ensure content doesn't overflow */
+        }
+
+        .info.legend i {
+            width: 16px;
+            height: 16px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+
+        #toggle-btn {
+        background-color: #f5f5f5;  /* Light gray background */
+        color: #333;                /* Almost black text */
+        border: 1px solid #ddd;     /* Slightly darker gray border */
+        padding: 10px 0;            /* Padding only on top and bottom, since we're setting a fixed width */
+        cursor: pointer;            /* Hand cursor on hover */
+        border-radius: 5px;         /* Softly rounded corners */
+        font-size: 0.9em;           /* Moderate font size */
+        transition: background-color 0.3s, color 0.3s;  /* Smooth transition effect */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  /* A subtle shadow for some depth */
+
+        width: 155px;               /* Fixed width */
+        text-align: center;         /* Center the text horizontally */
+        display: inline-block;      /* Allows the button to be used inline with other elements but maintain block styling properties */
+        line-height: normal;        /* Ensures consistent vertical alignment of text */
+    }
+
+    #toggle-btn:hover {
+        background-color: #e5e5e5;  /* Slightly darker gray when hovered */
+        color: #222;                /* Darker text for contrast */
+    }
+
+    #toggle-btn:active {
+        background-color: #d5d5d5;  /* Even darker when pressed */
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);  /* Reduced shadow for "pressed" effect */
+    }
+
+
+
+    </style>
+
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"
+        integrity="sha512-6ZCLMiYwTeli2rVh3XAPxy3YoR5fVxGdH/pz+KMCzRY2M65Emgkw00Yqmhh8qLGeYQ3LbVZGdmOX9KUjSKr0TA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css"
+        integrity="sha512-fYyZwU1wU0QWB4Yutd/Pvhy5J1oWAwFXun1pt+Bps04WSe4Aq6tyHlT4+MHSJhD8JlLfgLuC4CbCnX5KHSjyCg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"
+        integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css'
+        rel='stylesheet' />
+
+
+    <link rel="stylesheet" href="L.switchBasemap.css">
+
+
+    <script type="text/javascript" src="L.switchBasemap.js"></script>
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css"
+        integrity="sha512-vJfMKRRm4c4UupyPwGUZI8U651mSzbmmPgR3sdE3LcwBPsdGeARvUM5EcSTg34DK8YIRiIo+oJwNfZPMKEQyug=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"
+        integrity="sha512-ozq8xQKq6urvuU6jNgkfqAmT7jKN2XumbrX1JiB3TnF7tI48DPI4Gy1GXKD/V3EExgAs1V+pRO7vwtS1LHg0Gw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"
+        integrity="sha512-OFs3W4DIZ5ZkrDhBFtsCP6JXtMEDGmhl0QPlmWYBJay40TT1n3gt2Xuw8Pf/iezgW9CdabjkNChRqozl/YADmg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+</head>
+
+<body>
+
+    <div id="leaflet-map"></div>
+
+    <div id="map-legend"></div>
+
+
+    </div>
+
+
+    <script>
+
+        var validBounds = L.latLngBounds(L.latLng(-95, -270), L.latLng(95, 270));
+
+        // Create a Leaflet map and set the initial view
+        var map = L.map('leaflet-map', {
+            maxBounds: validBounds,
+            zoomControl: false // default zoom control is on the left top.
+        }).setView([40, 0], 2);
+
+
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // Add a scale control to the map that only shows kilometers
+        L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+        map.addControl(new L.Control.Fullscreen({ position: 'topright' }));
+
+
+
+        // Define basemap layers with their respective properties
+        new L.basemapsSwitcher([
+            {
+                layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri'
+                }).setOpacity(0.9).addTo(map),//DEFAULT MAP
+                maxZoom: 17,
+                bounds: validBounds,
+                icon: 'terrain.jpeg',
+                name: 'Terrain'
+            },
+            {
+                layer: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).setOpacity(0.7),
+                icon: 'topo.jpg',
+                bounds: validBounds,
+                name: 'OpenTopo'
+            },
+
+            {
+                layer: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+                }).setOpacity(0.7),
+                maxZoom: 21,
+                icon: 'satellite.jpg',
+                bounds: validBounds,
+                name: 'Satellite'
+            },
+            {
+                layer: L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors)'
+                }),
+                icon: 'osm.png',
+                bounds: validBounds,
+                name: 'OSM'
+            },
+        ], { position: 'bottomleft' }).addTo(map);
+
+
+        var markers = L.markerClusterGroup({
+            spiderfyOnMaxZoom: false,
+            removeOutsideVisibleBounds: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: false
+        });
+
+        var rectanglesGroup = new L.LayerGroup();
+        var drawnItems = new L.FeatureGroup();
+        var fetchedData = null;
+        var drawnBounds = null;
+        let toggleState = 'species';  // Default is species
+        var maxSpeciesCount = 0;
+        var maxRecordingsCount = 0;
+
+        var toggleControl = L.control({ position: 'topright' });
+
+        markers.on('clusterclick', function (event) {
+            let childMarkers = event.layer.getAllChildMarkers();
+            let titlesList = childMarkers.map(marker => marker.options.title || 'No Title').join('<br>');
+            event.layer.bindPopup(titlesList).openPopup();
+        });
+
+
+        map.addLayer(drawnItems);
+
+        L.drawLocal.draw.handlers.rectangle.tooltip.start = "Click and drag a reactangle on desired area";
+
+        var drawControl = new L.Control.Draw({
+            draw: {
+                polyline: false,
+                polygon: false,
+                circle: false,
+                marker: false,
+                circlemarker: false,
+                rectangle: {
+                    shapeOptions: {},
+                }
+            },
+            edit: {
+                featureGroup: drawnItems,
+                edit: false,
+                remove: false
+            }
+        });
+        map.addControl(drawControl);
+
+
+        map.on(L.Draw.Event.CREATED, function (event) {
+            var layer = event.layer;
+            drawnBounds = layer.getBounds();
+            drawnItems.clearLayers();
+            drawnItems.addLayer(layer);
+            var bounds = layer.getBounds();
+
+            var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
+            fetchDataAndCreateGrid(apiUrl);
+            console.log(apiUrl);
+            drawnItems.clearLayers();
+        });
+
+        map.on('zoomend', function () {
+            if (fetchedData) {
+                processDataAndCreateGrid(fetchedData);
+            }
+            updateVisibilityBasedOnZoom(map.getZoom());
+        });
+
+        function fetchDataAndCreateGrid(apiUrl) {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    fetchedData = data;
+                    processDataAndCreateGrid(data);
+                    $(".info.legend").show();
+
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        function processDataAndCreateGrid(data) {
+            let zoomLevel = map.getZoom();
+            let gridSize = getGridSizeForZoom(zoomLevel);
+            markers.clearLayers();
+            rectanglesGroup.clearLayers();
+
+            const gridCounts = {};
+            let maxSpeciesCount = 0;
+            let maxRecordingsCount = 0; // Add this for max recordings
+
+            data.markers.forEach(markerData => {
+                const markerIcon = L.icon({
+                    iconUrl: 'marker-icon.png',
+                    iconSize: [15, 15],
+                });
+                const marker = L.marker([markerData.lat, markerData.lon], {
+                    icon: markerIcon,
+                    title: markerData.title
+                });
+                markers.addLayer(marker);
+
+                const gridLat = Math.floor(markerData.lat / gridSize) * gridSize;
+                const gridLng = Math.floor(markerData.lon / gridSize) * gridSize;
+                const gridKey = `${gridLat},${gridLng}`;
+                const species = markerData.title.split(":")[1]?.trim();
+
+                if (!gridCounts[gridKey]) {
+                    gridCounts[gridKey] = {
+                        species: new Set(),
+                        recordings: 0
+                    };
+                }
+                if (species) {
+                    gridCounts[gridKey].species.add(species);
+                }
+                gridCounts[gridKey].recordings++;
+                maxRecordingsCount = Math.max(maxRecordingsCount, gridCounts[gridKey].recordings); // Track the maximum recording count
+            });
+
+            for (let gridKey in gridCounts) {
+                if (toggleState === 'species') {
+                    maxSpeciesCount = Math.max(maxSpeciesCount, gridCounts[gridKey].species.size);
+
+                } else {
+                    maxRecordingsCount = Math.max(maxRecordingsCount, gridCounts[gridKey].recordings);
+
+                }
+            }
+
+            // Update the legend content dynamically
+            const maxCount = toggleState === 'species' ? maxSpeciesCount : maxRecordingsCount;
+            $(".info.legend").html(getLegendContent(maxCount));
+
+            const currentZoom = map.getZoom();
+
+            if (currentZoom <= 3 && drawnBounds) {
+                rectanglesGroup.clearLayers();
+
+                let totalSpecies = 0;
+                let totalRecordings = 0;
+
+                for (let key in gridCounts) {
+                    totalSpecies += gridCounts[key].species.size;
+                    totalRecordings += gridCounts[key].recordings;
+                }
+
+                const color = toggleState === 'species'
+                    ? getColor(totalSpecies, maxSpeciesCount * Object.keys(gridCounts).length)
+                    : getColor(totalRecordings, maxSpeciesCount * Object.keys(gridCounts).length);
+
+
+                let rectangle = L.rectangle(
+                    [drawnBounds.getSouthWest(), drawnBounds.getNorthEast()],
+                    { color: color, weight: 1 }
+                ).bindTooltip(`${data.markers.length} recordings from ${new Set(data.markers.map(m => m.title.split(":")[1]?.trim())).size} species`);
+                rectanglesGroup.addLayer(rectangle);
+
+                map.addLayer(rectanglesGroup);
+                return;
+            }
+
+
+            for (let gridKey in gridCounts) {
+                const [gridLat, gridLng] = gridKey.split(',').map(Number);
+                const speciesCount = gridCounts[gridKey].species.size;
+                const recordingsCount = gridCounts[gridKey].recordings;
+
+                const color = toggleState === 'species'
+                    ? getColor(speciesCount, maxSpeciesCount, 'species')
+                    : getColor(recordingsCount, maxRecordingsCount, 'recordings'); // Use maxRecordingsCount for recordings
+
+                const rectangle = L.rectangle(
+                    [[gridLat, gridLng], [gridLat + gridSize, gridLng + gridSize]],
+                    {
+                        color: color,
+                        weight: 1.2,
+                        fillOpacity: 0.7
+                    }
+                );
+
+                rectangle.bindTooltip(`${recordingsCount} recordings from ${speciesCount} species`);
+    rectangle.on('mouseover', function(e) {
+        e.target.openTooltip();
+    });
+    rectangle.on('mouseout', function(e) {
+        e.target.closeTooltip();
+    });
+
+    rectanglesGroup.addLayer(rectangle);
+}
+
+
+            map.addLayer(markers);
+            map.addLayer(rectanglesGroup);
+            updateVisibilityBasedOnZoom(map.getZoom());
+
+        }
+
+        // Function to update visibility based on zoom level
+        function updateVisibilityBasedOnZoom(zoom) {
+            if (zoom > 11) {
+                rectanglesGroup.removeFrom(map);
+                map.addLayer(markers);
+                if (drawnBounds) {
+                    showLegend();
+                } else {
+                    hideLegend();
+                }
+            } else if (zoom >= 4) {
+                map.removeLayer(markers);
+                rectanglesGroup.addTo(map);
+                if (drawnBounds) {
+                    showLegend();
+                } else {
+                    hideLegend();
+                }
+            } else {
+                map.removeLayer(markers);
+                rectanglesGroup.addTo(map);
+                hideLegend();
+            }
+        }
+
+
+        // Function to show the legend
+        function showLegend() {
+            $(".info.legend").show();
+        }
+
+        // Function to hide the legend
+        function hideLegend() {
+            $(".info.legend").hide();
+        }
+
+
+
+        function getGridSizeForZoom(zoom) {
+            console.log(zoom);
+            if (zoom <= 2 && drawnBounds) {
+                const widthInDegrees = drawnBounds.getEast() - drawnBounds.getWest();
+                return widthInDegrees;
+            }
+            if (zoom >= 9) return 0.2;
+            if (zoom >= 3) return 0.5;
+        }
+        
+        
+        function getColor(count, maxCount) {
+    const fraction = count / maxCount;
+
+    if (fraction <= 0.2) return '#74A9CF';       // Light lavender
+    if (fraction <= 0.4) return '#2B8CBE';       // Sky blue
+    if (fraction <= 0.6) return '#FED976';       // Medium blue
+    if (fraction <= 0.8) return '#FB6A4A';       // Deep blue
+    return '#E31A1C';                            //  red
+}
+
+
+
+
+
+        map.on('boxzoomend', function (e) {
+            drawnBounds = e.boxZoomBounds;
+            drawnItems.clearLayers();
+
+            // Create a rectangle from the bounds and add to the map
+            let layer = L.rectangle([drawnBounds.getSouthWest(), drawnBounds.getNorthEast()]);
+            drawnItems.addLayer(layer);
+
+            var bounds = drawnBounds;
+
+            var apiUrl = `https://xeno-canto.org/api/internal/region-results?yn=${bounds._northEast.lat}&xe=${bounds._northEast.lng}&ys=${bounds._southWest.lat}&xw=${bounds._southWest.lng}`;
+            fetchDataAndCreateGrid(apiUrl);
+            drawnItems.clearLayers();
+        });
+
+
+
+
+        toggleControl.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'toggle-control');
+            div.innerHTML = '<button id="toggle-btn">Switch to Recordings</button>';
+            return div;
+        };
+
+        toggleControl.addTo(map);
+        document.getElementById('toggle-btn').addEventListener('click', function () {
+            if (toggleState === 'species') {
+                toggleState = 'recordings';
+                this.innerHTML = "Switch to Species";
+            } else {
+                toggleState = 'species';
+                this.innerHTML = "Switch to Recordings";
+            }
+
+            if (fetchedData) {
+                processDataAndCreateGrid(fetchedData);
+            }
+        });
+
+
+        var legend = L.control({ position: 'topright' });
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            //div.innerHTML = getLegendContent(0);  // Initially assume maxCount as 0
+            return div;
+        };
+
+
+
+        function getLegendContent(maxCount) {
+                    const grades = [
+                0, 
+                Math.round(0.2 * maxCount),
+                Math.round(0.4 * maxCount), 
+                Math.round(0.6 * maxCount), 
+                Math.round(0.8 * maxCount)
+            ];
+
+            let labels = [];
+
+            // Convert grid size in degrees to kilometers and calculate the area
+            const gridSizeInDegrees = getGridSizeForZoom(map.getZoom());
+            const gridSizeInKm = gridSizeInDegrees * 111;  // Roughly 111 km per degree of latitude
+            const gridSizeAreaInKm2 = Math.pow(gridSizeInKm, 2);  // Square the distance to get the area
+
+            // Add the title at the top of the legend
+            labels.push('<strong>' + (toggleState === 'species'
+                ? 'Number of species'
+                : 'Number of recordings') + '</strong>');
+
+            for (let i = 0; i < grades.length; i++) {
+                if (i < grades.length - 1) {
+                    labels.push(
+                        `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
+                        }${grades[i + 1] ? ' &ndash; ' + (grades[i + 1] - 1) : '+'}`
+                    );
+                } else {
+
+                    labels.push(
+                        `<i style="background:${getColor(grades[i] + 1, maxCount)}"></i> ${grades[i]
+                        } - ${maxCount}`
+                    );
+                }
+            }
+
+            // Wrapping the grid size info in a div to adjust spacing
+            labels.push(`<div class="grid-size-info">Grid size: ~${gridSizeInKm.toFixed(2)} km (~${gridSizeAreaInKm2.toFixed(2)} km²)</div>`);
+
+            return labels.join('<br>');
+        }
+
+
+
+        legend.addTo(map);
+
+
+    </script>
+
+</body>
+
+
+
+
+</html>
