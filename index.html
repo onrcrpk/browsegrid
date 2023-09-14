@@ -494,13 +494,8 @@
     if (zoom > 15) {  // Show only markers after zoom 15
         rectanglesGroup.removeFrom(map);
         map.addLayer(markers);
-        if (drawnBounds) {
-            showLegend();
-            toggleButton.style.display = 'block';
-        } else {
-            hideLegend();
-            toggleButton.style.display = 'none';
-        }
+        hideLegend(); // Hide the legend here
+        toggleButton.style.display = 'none'; // Hide the toggle button too
     } else if (zoom >= 12 && zoom <= 15) {  // Introduce grids between 12-15
         map.removeLayer(markers);
         rectanglesGroup.addTo(map);
