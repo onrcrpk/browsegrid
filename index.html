@@ -488,39 +488,48 @@
 
 
 
-        // Update the visibility of markers or rectangles based on zoom level
         function updateVisibilityBasedOnZoom(zoom) {
-            const toggleButton = document.getElementById('toggle-btn');
-
-
-
-            if (zoom > 11) {
-                rectanglesGroup.removeFrom(map);
-                map.addLayer(markers);
-                if (drawnBounds) {
-                    showLegend();
-                    toggleButton.style.display = 'block';
-                } else {
-                    hideLegend();
-                    toggleButton.style.display = 'none';
-                }
-            } else if (zoom >= 2) {
-                map.removeLayer(markers);
-                rectanglesGroup.addTo(map);
-                if (drawnBounds) {
-                    showLegend();
-                    toggleButton.style.display = 'block';
-                } else {
-                    hideLegend();
-                    toggleButton.style.display = 'none';
-                }
-            } else {
-                map.removeLayer(markers);
-                rectanglesGroup.addTo(map);
-                hideLegend(); // This ensures that the legend is hidden at zoom levels 1-3.
-                toggleButton.style.display = 'none';
-            }
+    const toggleButton = document.getElementById('toggle-btn');
+    
+    if (zoom > 15) {  // Show only markers after zoom 15
+        rectanglesGroup.removeFrom(map);
+        map.addLayer(markers);
+        if (drawnBounds) {
+            showLegend();
+            toggleButton.style.display = 'block';
+        } else {
+            hideLegend();
+            toggleButton.style.display = 'none';
         }
+    } else if (zoom >= 12 && zoom <= 15) {  // Introduce grids between 12-15
+        map.removeLayer(markers);
+        rectanglesGroup.addTo(map);
+        // Logic for grid calculation goes here...
+        if (drawnBounds) {
+            showLegend();
+            toggleButton.style.display = 'block';
+        } else {
+            hideLegend();
+            toggleButton.style.display = 'none';
+        }
+    } else if (zoom >= 2) {
+        map.removeLayer(markers);
+        rectanglesGroup.addTo(map);
+        if (drawnBounds) {
+            showLegend();
+            toggleButton.style.display = 'block';
+        } else {
+            hideLegend();
+            toggleButton.style.display = 'none';
+        }
+    } else {
+        map.removeLayer(markers);
+        rectanglesGroup.addTo(map);
+        hideLegend();
+        toggleButton.style.display = 'none';
+    }
+}
+
 
 
         // 5. Utility Functions
@@ -531,7 +540,8 @@
                 const widthInDegrees = drawnBounds.getEast() - drawnBounds.getWest();
                 return widthInDegrees;
             }
-            if (zoom >= 9) return 0.2;
+            if (zoom >= 12 && zoom <= 15) return 0.02;
+            if (zoom >= 9) return 0.15;
             if (zoom >= 2) return 0.5;
         }
 
