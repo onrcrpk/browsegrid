@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse by region: Search an area.</title>
+    <title>Grid map</title>
 
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -366,8 +366,9 @@
                 });
                 markers.addLayer(marker);
 
-                const gridLat = Math.floor(markerData.lat / gridSize) * gridSize;
+                const gridLat = Math.floor(markerData.lat / (gridSize / 2)) * (gridSize / 2);
                 const gridLng = Math.floor(markerData.lon / gridSize) * gridSize;
+
                 const gridKey = `${gridLat},${gridLng}`;
                 const species = markerData.title.split(":")[1]?.trim();
 
@@ -437,13 +438,14 @@
                     : getColor(recordingsCount, maxRecordingsCount, 'recordings'); // Use maxRecordingsCount for recordings
 
                 const rectangle = L.rectangle(
-                    [[gridLat, gridLng], [gridLat + gridSize, gridLng + gridSize]],
+                    [[gridLat, gridLng], [gridLat + (gridSize / 2), gridLng + gridSize]],
                     {
                         color: color,
                         weight: 1.2,
                         fillOpacity: 0.7
                     }
                 );
+
 
                 rectangle.bindTooltip(`${recordingsCount} recordings from ${speciesCount} species`);
                 rectangle.on('mouseover', function (e) {
@@ -489,41 +491,43 @@
 
 
         function updateVisibilityBasedOnZoom(zoom) {
-    const toggleButton = document.getElementById('toggle-btn');
-    
-    if (zoom > 15) {  // Show only markers after zoom 15
-        rectanglesGroup.removeFrom(map);
-        map.addLayer(markers);
-        hideLegend(); // Hide the legend here
-        toggleButton.style.display = 'none'; // Hide the toggle button too
-    } else if (zoom >= 12 && zoom <= 15) {  // Introduce grids between 12-15
-        map.removeLayer(markers);
-        rectanglesGroup.addTo(map);
-        // Logic for grid calculation goes here...
-        if (drawnBounds) {
-            showLegend();
-            toggleButton.style.display = 'block';
-        } else {
-            hideLegend();
-            toggleButton.style.display = 'none';
+            const toggleButton = document.getElementById('toggle-btn');
+
+            // For zoom level 1:
+            if (zoom === 1) {
+                rectanglesGroup.addTo(map);     // Show grid
+                hideLegend();                   // Hide legend
+                map.removeLayer(markers);       // Hide markers
+                toggleButton.style.display = 'none'; // Hide button
+            }
+            // For zoom level between 1 and 6 (exclusive) OR 6 and 13 (exclusive):
+            else if ((zoom > 1 && zoom < 12)) {
+                rectanglesGroup.addTo(map);     // Show grid
+                if (drawnBounds) {
+                    showLegend();               // Show legend
+                    toggleButton.style.display = 'block'; // Show button
+                } else {
+                    hideLegend();               // Hide legend
+                    toggleButton.style.display = 'none'; // Hide button
+                }
+                map.removeLayer(markers);       // Hide markers
+            }
+            // For zoom level 13 and above:
+            else if (zoom >= 12) {
+                map.addLayer(markers);          // Show markers
+                rectanglesGroup.removeFrom(map); // Hide grid
+                hideLegend();                   // Hide legend
+                toggleButton.style.display = 'none'; // Hide button
+            }
+            // For any other cases (this may be redundant but kept for clarity):
+            else {
+                rectanglesGroup.addTo(map);     // Show grid
+                hideLegend();                   // Hide legend
+                map.removeLayer(markers);       // Hide markers
+                toggleButton.style.display = 'none'; // Hide button
+            }
         }
-    } else if (zoom >= 2) {
-        map.removeLayer(markers);
-        rectanglesGroup.addTo(map);
-        if (drawnBounds) {
-            showLegend();
-            toggleButton.style.display = 'block';
-        } else {
-            hideLegend();
-            toggleButton.style.display = 'none';
-        }
-    } else {
-        map.removeLayer(markers);
-        rectanglesGroup.addTo(map);
-        hideLegend();
-        toggleButton.style.display = 'none';
-    }
-}
+
 
 
 
@@ -535,10 +539,12 @@
                 const widthInDegrees = drawnBounds.getEast() - drawnBounds.getWest();
                 return widthInDegrees;
             }
-            if (zoom >= 12 && zoom <= 15) return 0.02;
-            if (zoom >= 9) return 0.15;
-            if (zoom >= 2) return 0.5;
+            if (zoom >= 6 && zoom <= 12) return 0.1;
+            if (zoom >= 2) return 2;
         }
+
+
+
 
         // Determine the color based on the ratio of current count to the max count
         function getColor(count, maxCount) {
